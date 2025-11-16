@@ -2,7 +2,14 @@ from django.db import models
 
 # Create your models here.
 
-class User(models.Model):
+class BaseModel(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        abstract = True
+
+class User(BaseModel):
     name = models.CharField(max_length=50)
     email = models.EmailField(unique=True)
     is_helper = models.BooleanField(default=False)
@@ -14,7 +21,7 @@ class User(models.Model):
         return self.name
 
 
-class UserProfile(models.Model):
+class UserProfile(BaseModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     full_name = models.CharField(max_length=100)
     credits = models.IntegerField(default=0)
@@ -25,8 +32,6 @@ class UserProfile(models.Model):
     phone = models.CharField(max_length=100)
     rating = models.FloatField(default=0)
     verified = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         verbose_name_plural = 'User Profiles'
@@ -35,7 +40,7 @@ class UserProfile(models.Model):
         return self.full_name
 
 
-class Problem(models.Model):
+class Problem(BaseModel):
     MODE = [
         ('online', 'Online'),
         ('in_person', 'In Person'),
@@ -60,53 +65,46 @@ class Problem(models.Model):
     category = models.CharField(max_length=30, choices=CATEGORIES, default="general")
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
     help_mode = models.CharField(max_length=20, choices=MODE)
-    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
-    updated_at = models.DateTimeField(auto_now=True)
     reward = models.IntegerField(default=0)
 
     def __str__(self):
         return self.title
     
-class ProblemAttachment(models.Model):
+class ProblemAttachment(BaseModel):
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='attachments')
     file = models.FileField(upload_to='problem_attachments/')
 
 
-class Solution(models.Model):
+class Solution(BaseModel):
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
     text = models.TextField()
     solver = models.ForeignKey(User, on_delete=models.CASCADE)
     ai_summary = models.TextField(blank=True)
     is_accepted = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"Solution from {self.solver.name} for {self.problem.title}"
 
 
-class SolutionAttachment(models.Model):
+class SolutionAttachment(BaseModel):
     solution = models.ForeignKey(Solution, on_delete=models.CASCADE, related_name='attachments')
     file = models.FileField(upload_to='solution_attachments/')
 
 
-class AIHint(models.Model):
+class AIHint(BaseModel):
     problem_description = models.TextField()
-    created_at = models.DateField(auto_now_add=True)
 
-
-class AISummary(models.Model):
+class AISummary(BaseModel):
     solution = models.TextField()
     generated_summary = models.TextField(blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
 
 
-class Review(models.Model):
+class Review(BaseModel):
     rating = models.FloatField(default=0.0)
     review = models.TextField()
 
 
-class Portfolio(models.Model):
+class Portfolio(BaseModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     problems = models.ForeignKey(Problem, on_delete=models.CASCADE)
     solutions = models.ForeignKey(Solution, on_delete=models.CASCADE)
@@ -114,20 +112,20 @@ class Portfolio(models.Model):
     reviews = models.ForeignKey(Review, on_delete=models.CASCADE)
 
 
-class Badge(models.Model):
+class Badge(BaseModel):
     name = models.CharField(max_length=100)
     description = models.TextField()
     icon = models.CharField(max_length=100)
     students_required = models.IntegerField(default=0)
 
 
-class UserBadge(models.Model):
+class UserBadge(BaseModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     badge = models.ForeignKey(Badge, on_delete=models.CASCADE)
     awarded_at = models.DateTimeField(auto_now_add=True)
+    
 
-
-class Location(models.Model):
+class Location(BaseModel):
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
     latitude = models.DecimalField(max_digits=9, decimal_places=6)
     longitude = models.DecimalField(max_digits=9, decimal_places=6)
