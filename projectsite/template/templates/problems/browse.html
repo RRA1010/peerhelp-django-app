@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% block title %}Browse Problems | PeerHelp{% endblock %}
+{% block body_class %}problems-page{% endblock %}
+{% block content %}
+<section class="page-header d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+  <div>
+    <h1 class="display-6 text-gray-900 mb-1">Browse Problems</h1>
+    <p class="text-muted-soft mb-0">Help fellow students and earn credits.</p>
+  </div>
+  <a class="btn btn-orange d-inline-flex align-items-center gap-2" href="{% url 'post-problem' %}">
+    <i data-lucide="sparkles"></i>
+    Post Problem
+  </a>
+</section>
+
+<section class="filter-card mentora-card mb-4">
+  <form class="card-body p-4" method="get">
+    <div class="row g-3 align-items-center">
+      <div class="col-12 col-lg">
+        <div class="position-relative">
+          <span class="input-icon"><i data-lucide="search"></i></span>
+          <input type="search" class="form-control input-control search-input" name="query" value="{{ search_query }}" placeholder="Search problems..." />
+        </div>
+      </div>
+      <div class="col-auto d-flex gap-2">
+        <button class="btn btn-orange-outline d-inline-flex align-items-center gap-2" type="button" data-bs-toggle="collapse" data-bs-target="#filtersCollapse" aria-controls="filtersCollapse" aria-expanded="{{ filters_open|yesno:'true,false' }}">
+          <i data-lucide="filter"></i>
+          Filters
+        </button>
+        <button class="btn btn-orange d-inline-flex align-items-center gap-2" type="submit">
+          Apply
+          <i data-lucide="arrow-right"></i>
+        </button>
+      </div>
+    </div>
+    <div class="collapse mt-4{% if filters_open %} show{% endif %}" id="filtersCollapse">
+      <div class="row g-4 border-top pt-4 filter-grid">
+        <div class="col-12 col-md-4">
+          <label class="form-label small text-muted-soft">Category</label>
+          <select class="form-select select-pill" name="subject">
+            {% for subject in filter_subjects %}
+              <option value="{{ subject }}" {% if subject == selected_subject %}selected{% endif %}>{{ subject }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-12 col-md-4">
+          <label class="form-label small text-muted-soft">Mode</label>
+          <select class="form-select select-pill" name="mode">
+            {% for mode in filter_modes %}
+              <option value="{{ mode }}" {% if mode == selected_mode %}selected{% endif %}>{{ mode }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-12 col-md-4">
+          <label class="form-label small text-muted-soft">Sort By</label>
+          <select class="form-select select-pill" name="sort">
+            {% for option in sort_options %}
+              <option value="{{ option.value }}" {% if option.value == selected_sort %}selected{% endif %}>{{ option.label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+    </div>
+  </form>
+</section>
+
+<section class="problem-list d-flex flex-column gap-3">
+  {% for problem in problems %}
+    <a href="{% url 'problem-detail' problem.slug %}" class="mentora-card problem-card d-block text-decoration-none">
+      <div class="card-body p-4">
+        <div class="row g-4">
+          <div class="col-auto">
+            {% include "components/avatar.html" with src=problem.author.avatar initials=problem.author.initials|default:problem.author.name|first user_initials=problem.author.initials|default:problem.author.name|first %}
+            <div class="mt-2 text-sm text-gray-700 fw-semibold">{{ problem.author.name }}</div>
+            <div class="small text-muted-soft d-flex align-items-center gap-1">
+              <i data-lucide="award" class="text-amber-600" style="width:14px;height:14px;"></i>
+              {{ problem.author.credits }}
+            </div>
+          </div>
+          <div class="col">
+            <div class="d-flex flex-wrap align-items-start gap-3 mb-3">
+              <h3 class="h5 text-gray-900 mb-0 flex-grow-1 problem-title">{{ problem.title }}</h3>
+              <span class="badge-soft urgency-badge urgency-{{ problem.urgency }} text-capitalize">{{ problem.urgency }}</span>
+            </div>
+            <p class="text-muted-soft mb-3 line-clamp-2">{{ problem.description }}</p>
+            <div class="d-flex flex-wrap gap-2 mb-3">
+              {% for tag in problem.tags %}
+                <span class="tag-pill">{{ tag }}</span>
+              {% endfor %}
+            </div>
+            <div class="d-flex flex-wrap align-items-center gap-4 text-muted-soft small">
+              <span class="d-inline-flex align-items-center gap-2 text-capitalize">
+                {% if problem.mode == 'in_person' %}
+                  <i data-lucide="map-pin"></i>
+                {% else %}
+                  <i data-lucide="monitor"></i>
+                {% endif %}
+                {{ problem.mode_label }}
+              </span>
+              <span class="d-inline-flex align-items-center gap-2">
+                <i data-lucide="clock"></i>
+                {{ problem.time }}
+              </span>
+              <span class="d-inline-flex align-items-center gap-2">
+                <i data-lucide="message-circle"></i>
+                {{ problem.responses }} responses
+              </span>
+              <span class="d-inline-flex align-items-center gap-2 text-amber-600 ms-auto">
+                <i data-lucide="award"></i>
+                {{ problem.credits }} credits
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </a>
+  {% empty %}
+    <div class="mentora-card">
+      <div class="card-body text-center py-5">
+        <p class="text-muted-soft mb-3">No problems found. Try adjusting your filters.</p>
+        <a class="btn btn-orange" href="{% url 'post-problem' %}">Post the first problem</a>
+      </div>
+    </div>
+  {% endfor %}
+
+  {% if page_obj and page_obj.paginator.num_pages > 1 %}
+    <div class="pagination-controls d-flex flex-column flex-md-row align-items-center justify-content-between gap-3 mt-4">
+      <div class="text-muted-soft small">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</div>
+      <div class="d-flex flex-wrap gap-2">
+        {% with base=pagination_query %}
+          <a class="btn btn-orange-outline {% if not page_obj.has_previous %}disabled{% endif %}" {% if page_obj.has_previous %}href="?{% if base %}{{ base }}&{% endif %}page={{ page_obj.previous_page_number }}"{% else %}tabindex="-1" aria-disabled="true"{% endif %}>
+            Previous
+          </a>
+          {% for num in page_obj.paginator.page_range %}
+            {% if num == page_obj.number %}
+              <span class="btn btn-orange disabled" aria-current="page">{{ num }}</span>
+            {% else %}
+              <a class="btn btn-orange-outline" href="?{% if base %}{{ base }}&{% endif %}page={{ num }}">{{ num }}</a>
+            {% endif %}
+          {% endfor %}
+          <a class="btn btn-orange-outline {% if not page_obj.has_next %}disabled{% endif %}" {% if page_obj.has_next %}href="?{% if base %}{{ base }}&{% endif %}page={{ page_obj.next_page_number }}"{% else %}tabindex="-1" aria-disabled="true"{% endif %}>
+            Next
+          </a>
+        {% endwith %}
+      </div>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

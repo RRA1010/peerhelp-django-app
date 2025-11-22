@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Post a Problem | PeerHelp{% endblock %}
+{% block body_class %}post-problem-page{% endblock %}
+{% block content %}
+<section class="page-header d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-4 mb-4">
+  <div>
+    <h1 class="h2 text-gray-900 mb-2">Post a New Problem</h1>
+    <p class="text-muted-soft mb-0">Describe what you need help with so mentors can jump in quickly.</p>
+  </div>
+  <a class="btn btn-orange-outline d-inline-flex align-items-center gap-2" href="{% url 'browse-problems' %}">
+    <i data-lucide="search"></i>
+    Browse Problems
+  </a>
+</section>
+
+<form method="post" class="mentora-card" novalidate>
+  {% csrf_token %}
+  <div class="card-body p-4 p-lg-5">
+    {% if problem_form.non_field_errors %}
+      <div class="alert alert-danger mb-4">
+        {% for error in problem_form.non_field_errors %}
+          <div>{{ error }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <div class="row g-4">
+      <div class="col-12 col-lg-6">
+        <label class="form-label small text-muted-soft">Title</label>
+        {{ problem_form.title }}
+        {{ problem_form.title.errors }}
+      </div>
+      <div class="col-12 col-lg-6">
+        <label class="form-label small text-muted-soft">Category</label>
+        {{ problem_form.subject }}
+        {{ problem_form.subject.errors }}
+      </div>
+      <div class="col-12">
+        <label class="form-label small text-muted-soft">Detailed Description</label>
+        {{ problem_form.description }}
+        {{ problem_form.description.errors }}
+      </div>
+      <div class="col-12 col-lg-6">
+        <label class="form-label small text-muted-soft">Tags (comma separated)</label>
+        {{ problem_form.tags }}
+        {{ problem_form.tags.errors }}
+      </div>
+      <div class="col-12 col-lg-6">
+        <label class="form-label small text-muted-soft">Meeting Location / Link</label>
+        {{ problem_form.location_label }}
+        {{ problem_form.location_label.errors }}
+      </div>
+      <div class="col-12 col-md-6">
+        <label class="form-label small text-muted-soft">Mode</label>
+        {{ problem_form.mode }}
+        {{ problem_form.mode.errors }}
+      </div>
+      <div class="col-12 col-md-6">
+        <label class="form-label small text-muted-soft">Urgency</label>
+        {{ problem_form.urgency }}
+        {{ problem_form.urgency.errors }}
+      </div>
+      <div class="col-12">
+        <div class="info-banner rounded-3 px-3 py-3 d-flex align-items-center gap-2">
+          <i data-lucide="award"></i>
+          <span class="text-muted-soft">This problem awards <strong>10 credits</strong>. Credits are assigned automatically.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card-footer bg-transparent border-0 d-flex flex-column flex-md-row gap-3 justify-content-between align-items-stretch align-items-md-center px-4 pb-4">
+    <a class="btn btn-orange-outline w-100 w-md-auto" href="{% url 'browse-problems' %}">Cancel</a>
+    <button type="submit" class="btn btn-orange w-100 w-md-auto d-inline-flex align-items-center justify-content-center gap-2">
+      <i data-lucide="sparkles"></i>
+      {% if editing %}Update Problem{% else %}Post Problem{% endif %}
+    </button>
+  </div>
+</form>
+{% endblock %}

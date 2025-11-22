@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}AI Assistant Tools | PeerHelp{% endblock %}
+{% block body_class %}ai-tools-page{% endblock %}
+{% block content %}
+<section class="page-header d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-4 mb-4">
+  <div>
+    <div class="d-inline-flex align-items-center gap-3 mb-3">
+      <div class="hero-icon gradient-purple">
+        <i data-lucide="sparkles"></i>
+      </div>
+      <div>
+        <h1 class="h2 text-gray-900 mb-1">{{ ai_header.title|default:"AI Assistant Tools" }}</h1>
+        <p class="text-muted-soft mb-0">{{ ai_header.subtitle|default:"Get intelligent hints and summaries powered by PeerHelp AI." }}</p>
+      </div>
+    </div>
+  </div>
+  <div class="text-lg-end">
+    <span class="badge-soft teal">{{ ai_header.badge|default:"Live Beta Access" }}</span>
+  </div>
+</section>
+
+<section class="mentora-card ai-tools-panel mb-4">
+  <div class="card-body p-4 p-lg-5">
+    <div class="row g-4 align-items-start">
+      <div class="col-12 col-lg-8">
+        <div class="mb-3">
+          <label class="form-label text-muted-soft fw-semibold">{{ ai_summary_prompt|default:"Paste your solution or explanation" }}</label>
+          <textarea class="form-control ai-input" rows="8" placeholder="{{ ai_summary_placeholder|default:"Paste your detailed solution here. The AI will generate a concise summary highlighting key points..." }}" data-ai-input="summary"></textarea>
+        </div>
+        <button class="btn btn-orange w-100 d-inline-flex align-items-center justify-content-center gap-2" data-ai-generate="summary">
+          <span class="btn-label">
+            <i data-lucide="file-text"></i>
+            Generate Summary
+          </span>
+          <span class="btn-loading d-none">
+            <span class="spinner-border spinner-border-sm me-2"></span>
+            Generating...
+          </span>
+        </button>
+
+        <div class="ai-output mt-4 d-none" data-ai-output="summary">
+          <div class="d-flex align-items-center gap-2 mb-2 text-gray-900 fw-semibold">
+            <i data-lucide="sparkles" class="text-blue-600"></i>
+            AI-Generated Summary
+          </div>
+          <div class="ai-output-card blue" data-ai-content="summary">{{ summary_placeholder }}</div>
+          <div class="d-flex flex-wrap gap-3 mt-3">
+            <button class="btn btn-orange-outline btn-sm" type="button">Copy Summary</button>
+            <button class="btn btn-orange-outline btn-sm" type="button">Add to Portfolio</button>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-lg-4">
+        <div class="info-banner purple h-100">
+          <div class="card-body">
+            <h4 class="h6 text-gray-900 mb-3 d-flex align-items-center gap-2">
+              <i data-lucide="file-text"></i>
+              Summary Tips
+            </h4>
+            <ul class="list-unstyled text-muted-soft small d-flex flex-column gap-2 mb-0">
+              {% if summary_guidelines %}
+                {% for item in summary_guidelines %}
+                  <li class="d-flex gap-2">
+                    <span class="text-purple-600">•</span>
+                    <span>{{ item }}</span>
+                  </li>
+                {% endfor %}
+              {% else %}
+                <li class="d-flex gap-2">
+                  <span class="text-purple-600">•</span>
+                  <span>Describe the challenge, approach, and outcome.</span>
+                </li>
+                <li class="d-flex gap-2">
+                  <span class="text-purple-600">•</span>
+                  <span>Highlight the skills demonstrated.</span>
+                </li>
+                <li class="d-flex gap-2">
+                  <span class="text-purple-600">•</span>
+                  <span>Keep it short so it is ready for your portfolio.</span>
+                </li>
+              {% endif %}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

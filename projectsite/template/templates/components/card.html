@@ -1,0 +1,31 @@
+<div class="mentora-card {{ card_classes }}">
+  {% if header_icon or header_title %}
+    <div class="card-header bg-transparent border-0 pb-0">
+      <div class="d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-3">
+          {% if header_icon %}
+            <div class="stat-icon {{ header_icon_variant|default:'teal' }}">
+              <i data-lucide="{{ header_icon }}"></i>
+            </div>
+          {% endif %}
+          <div>
+            {% if header_title %}<div class="text-gray-900 fw-semibold">{{ header_title }}</div>{% endif %}
+            {% if header_subtitle %}<div class="small text-muted-soft">{{ header_subtitle }}</div>{% endif %}
+          </div>
+        </div>
+        {% if header_badge %}
+          <span class="badge-soft {{ header_badge_variant|default:'teal' }}">{{ header_badge }}</span>
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
+  <div class="card-body">
+    {% if card_value %}
+      <div class="display-6 mb-1 text-gray-900">{{ card_value }}</div>
+    {% endif %}
+    {% if card_label %}
+      <div class="small text-muted-soft">{{ card_label }}</div>
+    {% endif %}
+    {% block card_content %}{% endblock %}
+  </div>
+</div>

@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}Map View | PeerHelp{% endblock %}
+{% block body_class %}map-page{% endblock %}
+{% block content %}
+<section class="page-header mb-4">
+  <div>
+    <h1 class="h2 text-gray-900 mb-2">In-Person Requests</h1>
+    <p class="text-muted-soft mb-0">View students who need help face-to-face around campus.</p>
+  </div>
+</section>
+
+<section class="mentora-card filter-card mb-4">
+  <div class="card-body">
+    <div class="d-flex flex-column flex-lg-row gap-3">
+      <div class="position-relative flex-grow-1">
+        <i data-lucide="search" class="input-icon"></i>
+        <input type="text" class="form-control search-input" placeholder="Search by subject or location...">
+      </div>
+      <div class="d-flex gap-2">
+        <button class="btn btn-orange-outline rounded-3 d-inline-flex align-items-center gap-2" type="button">
+          <i data-lucide="filter"></i>
+          Filters
+        </button>
+        <button class="btn btn-orange rounded-3 d-inline-flex align-items-center gap-2" type="button">
+          <i data-lucide="navigation"></i>
+          My Location
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="row g-4 mb-4">
+  <div class="col-12 col-lg-8">
+    <div class="mentora-card map-card h-100">
+      <div class="map-canvas">
+        <div class="map-grid"></div>
+        {% if map_markers %}
+          {% for marker in map_markers %}
+            <button type="button" class="map-marker {{ marker.variant|default:'teal' }}" style="--marker-top: {{ marker.top|default:50 }}; --marker-left: {{ marker.left|default:50 }};" data-marker-id="{{ marker.id }}">
+              <i data-lucide="map-pin"></i>
+            </button>
+          {% endfor %}
+        {% else %}
+          <button type="button" class="map-marker teal" style="--marker-top: 25; --marker-left: 35;" data-marker-id="1">
+            <i data-lucide="map-pin"></i>
+          </button>
+          <button type="button" class="map-marker emerald" style="--marker-top: 50; --marker-left: 50;" data-marker-id="2">
+            <i data-lucide="map-pin"></i>
+          </button>
+          <button type="button" class="map-marker purple" style="--marker-top: 68; --marker-left: 65;" data-marker-id="3">
+            <i data-lucide="map-pin"></i>
+          </button>
+          <button type="button" class="map-marker amber" style="--marker-top: 75; --marker-left: 30;" data-marker-id="4">
+            <i data-lucide="map-pin"></i>
+          </button>
+        {% endif %}
+        <div class="map-location"></div>
+        <div class="map-legend">
+          <div class="d-flex align-items-center gap-2 text-sm text-gray-700">
+            <span class="legend-dot"></span>
+            Your Location
+          </div>
+        </div>
+        <div class="map-zoom">
+          <button type="button">+</button>
+          <button type="button">−</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-lg-4">
+    <div class="request-list" data-request-list>
+      {% if in_person_requests %}
+        {% for request in in_person_requests %}
+          <div class="mentora-card request-card" data-request-card data-marker-target="{{ request.id }}">
+            <div class="card-body">
+              <div class="d-flex align-items-start justify-content-between gap-3 mb-2">
+                <h3 class="h6 text-gray-900 mb-0 flex-grow-1">{{ request.title }}</h3>
+                <span class="badge-soft teal">{{ request.distance }}</span>
+              </div>
+              <div class="d-flex flex-wrap gap-2 text-sm text-muted-soft mb-2">
+                <span class="subject-pill">{{ request.subject }}</span>
+                <span class="d-inline-flex align-items-center gap-1 text-amber-600">
+                  <i data-lucide="award"></i>
+                  {{ request.credits }} credits
+                </span>
+              </div>
+              <div class="request-meta text-muted-soft small">
+                <div class="d-flex align-items-center gap-1">
+                  <i data-lucide="map-pin"></i>
+                  <span>{{ request.location }}</span>
+                </div>
+                {% if request.tags %}
+                  <div class="d-flex flex-wrap gap-1 mt-2">
+                    {% for tag in request.tags %}
+                      <span class="tag-pill">{{ tag }}</span>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="mentora-card">
+          <div class="card-body text-center py-5">
+            <p class="text-muted-soft mb-0">No in-person requests yet. Check back soon.</p>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<section class="mentora-card info-banner">
+  <div class="card-body d-flex gap-3">
+    <div class="info-icon">
+      <i data-lucide="map-pin"></i>
+    </div>
+    <div>
+      <h3 class="h6 text-gray-900 mb-2">In-Person Support Rules</h3>
+      <ul class="list-unstyled text-muted-soft small mb-0 d-flex flex-column gap-1">
+        <li>Only problems flagged as <strong>In Person</strong> appear on this map.</li>
+        <li>Each marker represents a student request, not a mentor.</li>
+        <li>Coordinate directly in chat before meeting at a public campus spot.</li>
+        <li>Once solved, leave a review so it shows up in your portfolio.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+{% endblock %}

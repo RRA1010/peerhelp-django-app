@@ -1,0 +1,75 @@
+{% load static %}
+<nav class="mentora-sidebar d-none d-lg-flex flex-column">
+  <div class="flex-grow-1 overflow-auto scroll-soft">
+    {% if menu_items %}
+      {% for item in menu_items %}
+        <a class="nav-pill {% if current_page == item.id %}active{% endif %}" href="{% url item.url_name %}">
+          <i data-lucide="{{ item.icon }}"></i>
+          <span>{{ item.label }}</span>
+        </a>
+      {% endfor %}
+    {% else %}
+      <a class="nav-pill {% if current_page == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">
+        <i data-lucide="home"></i>
+        <span>Dashboard</span>
+      </a>
+      <a class="nav-pill {% if current_page == 'browse-problems' %}active{% endif %}" href="{% url 'browse-problems' %}">
+        <i data-lucide="search"></i>
+        <span>Browse Problems</span>
+      </a>
+      <a class="nav-pill {% if current_page == 'post-problem' %}active{% endif %}" href="{% url 'post-problem' %}">
+        <i data-lucide="help-circle"></i>
+        <span>Post Problem</span>
+      </a>
+      <a class="nav-pill {% if current_page == 'map-view' %}active{% endif %}" href="{% url 'map-view' %}">
+        <i data-lucide="map-pin"></i>
+        <span>In-Person Map</span>
+      </a>
+      <a class="nav-pill {% if current_page == 'ai-tools' %}active{% endif %}" href="{% url 'ai-tools' %}">
+        <i data-lucide="sparkles"></i>
+        <span>AI Assistant</span>
+      </a>
+    {% endif %}
+
+    <div class="brand-pill mt-4 align-items-center gap-3 d-none d-lg-inline-flex">
+      <div class="brand-mark shadow-emerald">
+        <img src="{% static 'img/logo.png' %}" alt="PeerHelp" class="brand-logo" />
+      </div>
+      <div>
+        <span class="d-block text-muted-soft text-uppercase small">Platform</span>
+        <span class="fw-semibold text-gray-900">PeerHelp</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-4 sidebar-card text-gray-900">
+    <div class="d-flex align-items-center gap-3 mb-3">
+      <div class="stat-icon teal">
+        <i data-lucide="award"></i>
+      </div>
+      <div>
+        <small class="text-muted-soft">Your Progress</small>
+        <div class="fw-semibold">{{ user_badge_tier|default:"Gold Helper" }}</div>
+      </div>
+    </div>
+    <div class="progress mb-2" role="progressbar" aria-valuenow="{% firstof user_progress_percent '75' %}" aria-valuemin="0" aria-valuemax="100">
+      <div class="progress-bar" data-progress-width="{% firstof user_progress_percent '75' %}"></div>
+    </div>
+    <div class="small text-muted-soft">{{ user_progress_note|default:"75% to Platinum" }}</div>
+  </div>
+</nav>
+
+<div class="offcanvas offcanvas-start" tabindex="-1" id="mobileSidebar">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title text-teal-600">Menu</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column gap-2">
+    {% for item in menu_items %}
+      <a class="nav-pill {% if current_page == item.id %}active{% endif %}" href="{% url item.url_name %}" data-bs-dismiss="offcanvas">
+        <i data-lucide="{{ item.icon }}"></i>
+        <span>{{ item.label }}</span>
+      </a>
+    {% endfor %}
+  </div>
+</div>
