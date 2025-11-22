@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Create Account | PeerHelp{% endblock %}
+{% block body_class %}auth-body{% endblock %}
+{% block app_shell %}
+<section class="auth-shell">
+  <span class="auth-orb emerald" style="width:20rem;height:20rem;top:5rem;right:10%;"></span>
+  <span class="auth-orb teal" style="width:18rem;height:18rem;bottom:6rem;left:10%; animation-delay:0.7s;"></span>
+  <span class="auth-orb amber" style="width:14rem;height:14rem;top:45%;right:40%; animation-delay:1s;"></span>
+
+  <div class="container-xxl position-relative" style="z-index:2;">
+    <div class="row g-5 align-items-center justify-content-center">
+      <div class="col-lg-6 col-xl-5 order-lg-2">
+        <div class="auth-panel">
+          <div class="text-center mb-5">
+            <div class="brand-pill d-inline-flex d-lg-none mb-3">
+              <div class="brand-mark shadow-emerald">
+                <img src="{% static 'img/logo.png' %}" alt="PeerHelp" class="brand-logo" />
+              </div>
+              <span class="fs-5 text-teal-600">PEERHELP</span>
+            </div>
+            <h2 class="fw-semibold display-6 fs-2 text-gray-900 mb-2">Create Account</h2>
+            <p class="text-muted-soft">Join thousands of students learning together.</p>
+          </div>
+
+          <form method="post" class="row gy-4">
+            {% csrf_token %}
+            <div class="col-12">
+              <label class="form-label small text-muted-soft">Full Name</label>
+              <div class="position-relative">
+                <span class="input-icon"><i data-lucide="user"></i></span>
+                <input type="text" name="name" class="form-control input-control" placeholder="John Doe" required />
+              </div>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label small text-muted-soft">Email Address</label>
+              <div class="position-relative">
+                <span class="input-icon"><i data-lucide="mail"></i></span>
+                <input type="email" name="email" class="form-control input-control" placeholder="you@university.edu" required />
+              </div>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label small text-muted-soft">University</label>
+              <div class="position-relative">
+                <span class="input-icon"><i data-lucide="graduation-cap"></i></span>
+                <input type="text" name="university" class="form-control input-control" placeholder="Your University Name" required />
+              </div>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label small text-muted-soft">Password</label>
+              <div class="position-relative">
+                <span class="input-icon"><i data-lucide="lock"></i></span>
+                <input id="registerPassword" type="password" name="password" class="form-control input-control pe-5" placeholder="Create a password" required />
+                <button class="toggle-password" type="button" aria-label="Toggle password visibility" data-toggle-password="#registerPassword">
+                  <i data-lucide="eye" class="eye-open"></i>
+                  <i data-lucide="eye-off" class="eye-off"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label small text-muted-soft">Confirm Password</label>
+              <div class="position-relative">
+                <span class="input-icon"><i data-lucide="lock"></i></span>
+                <input type="password" name="confirm_password" class="form-control input-control" placeholder="Confirm your password" required />
+              </div>
+            </div>
+
+            <div class="col-12 text-center">
+              <button type="submit" class="btn btn-orange">Create Account</button>
+            </div>
+          </form>
+
+          <div class="py-3 position-relative my-4 text-center">
+            <div class="border-top border-gray-200"></div>
+            <span class="position-absolute top-50 start-50 translate-middle px-3 small text-muted-soft bg-white">Or sign up with</span>
+          </div>
+
+          <div class="row g-3 justify-content-center">
+            <div class="col-12 col-sm-8">
+              <button type="button" class="social-btn w-100">
+                <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+                  <path fill="#4285F4" d="M23.6 12.25c0-.81-.07-1.58-.2-2.32H12v4.39h6.53c-.28 1.5-1.12 2.77-2.39 3.63v3h3.86c2.25-2.08 3.5-5.14 3.5-8.7z" />
+                  <path fill="#34A853" d="M12 24c3.24 0 5.96-1.07 7.95-2.91l-3.86-3c-1.07.72-2.45 1.15-4.09 1.15-3.15 0-5.82-2.13-6.77-5H1.26v3.15C3.25 21.09 7.27 24 12 24z" />
+                  <path fill="#FBBC05" d="M5.23 14.24a7.99 7.99 0 010-4.48V6.61H1.26A12 12 0 000 12c0 1.94.46 3.78 1.26 5.39l3.97-3.15z" />
+                  <path fill="#EA4335" d="M12 4.75a7.27 7.27 0 015.1 1.99l3.77-3.77C18.8 1 15.52 0 12 0 7.27 0 3.25 2.91 1.26 7.61l3.97 3.15c.95-2.87 3.62-5 6.77-5z" />
+                </svg>
+                Sign up with Google
+              </button>
+            </div>
+          </div>
+
+          <div class="text-center mt-4">
+            <span class="text-muted-soft">Already have an account? </span>
+            <a class="fw-semibold text-teal-600" href="{% url 'login' %}">Sign in</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-6 order-lg-1 d-none d-lg-block">
+        <div class="px-4">
+          <div class="brand-pill mb-4">
+            <div class="brand-mark shadow-emerald">
+              <img src="{% static 'img/logo.png' %}" alt="PeerHelp" class="brand-logo" />
+            </div>
+            <span class="fs-4 text-teal-600">PEERHELP</span>
+          </div>
+          <h1 class="display-4 fw-semibold text-gray-900 mb-4">
+            Start Your<br />
+            <span class="text-gradient-teal">Learning Journey</span>
+          </h1>
+          <p class="fs-5 text-muted-soft mb-5">Get personalized help from peers who have been through the same challenges.</p>
+
+          <div class="d-flex flex-column gap-4">
+            <div class="benefit-card">
+              <div class="icon teal">
+                <i data-lucide="sparkles"></i>
+              </div>
+              <div>
+                <h4 class="mb-1 text-gray-900">Instant Support</h4>
+                <p class="text-muted-soft small mb-0">Get help from verified students in minutes, not hours.</p>
+              </div>
+            </div>
+            <div class="benefit-card">
+              <div class="icon emerald">
+                <i data-lucide="graduation-cap"></i>
+              </div>
+              <div>
+                <h4 class="mb-1 text-gray-900">Earn Credits</h4>
+                <p class="text-muted-soft small mb-0">Help others and build your reputation with badges and credits.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

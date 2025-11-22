@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Portfolio | PeerHelp{% endblock %}
+{% block body_class %}portfolio-page{% endblock %}
+{% block content %}
+<section class="page-header mb-4">
+  <div>
+    <h1 class="h2 text-gray-900 mb-2">My Portfolio</h1>
+    <p class="text-muted-soft mb-0">Verified reviews from students whose problems you solved.</p>
+  </div>
+</section>
+
+<section class="mentora-card">
+  <div class="card-body">
+    <h2 class="h5 text-gray-900 mb-4">Latest Reviews</h2>
+    <div class="d-flex flex-column gap-3">
+      {% if portfolio_reviews %}
+        {% for review in portfolio_reviews %}
+          <div class="portfolio-review-row">
+            <div class="d-flex flex-wrap align-items-start justify-content-between gap-3">
+              <div>
+                <h3 class="h6 text-gray-900 mb-1">{{ review.problem_title }}</h3>
+                <div class="text-muted-soft small">{{ review.date }}</div>
+              </div>
+              <div class="d-inline-flex align-items-center gap-1 text-yellow-500 fw-semibold">
+                <i data-lucide="star"></i>
+                {{ review.rating }} / 5
+              </div>
+            </div>
+            <p class="text-muted-soft mb-0">{{ review.comment|default:"No written review provided." }}</p>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="portfolio-empty-state text-center py-5">
+          <p class="text-muted-soft mb-1">Your portfolio is waiting for its first review.</p>
+          <p class="text-muted-soft small mb-0">Submit solutions and collect feedback to populate this space.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}

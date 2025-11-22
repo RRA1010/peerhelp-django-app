@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+{% block title %}{{ profile.name|default:"User Profile" }} | PeerHelp{% endblock %}
+{% block body_class %}profile-page{% endblock %}
+{% block content %}
+<section class="mentora-card profile-cover-card overflow-hidden mb-4">
+  <div class="profile-cover-bg"></div>
+  <div class="profile-cover-pattern"></div>
+  <div class="card-body position-relative">
+    <div class="d-flex flex-column flex-lg-row align-items-lg-end gap-4">
+      <div class="text-center text-lg-start">
+        {% include "components/avatar.html" with src=profile.avatar initials=profile.initials|default:profile.name|first extra_classes="profile-avatar" %}
+        <h1 class="h3 profile-name mt-3 mb-2">{{ profile.name|default:"John Doe" }}</h1>
+        <div class="d-flex flex-wrap gap-3 justify-content-center justify-content-lg-start text-white-50 small">
+          <span class="d-inline-flex align-items-center gap-1">
+            <i data-lucide="graduation-cap"></i>
+            {{ profile.major|default:"Computer Science" }}
+          </span>
+          <span class="d-inline-flex align-items-center gap-1">
+            <i data-lucide="map-pin"></i>
+            {{ profile.university|default:"State University" }}
+          </span>
+          <span class="d-inline-flex align-items-center gap-1">
+            <i data-lucide="calendar"></i>
+            {{ profile.joined|default:"Joined March 2024" }}
+          </span>
+        </div>
+        <p class="text-white-75 mt-3 mb-0 profile-bio">{{ profile.bio|default:"Passionate about helping fellow students with math and programming. Always happy to share knowledge!" }}</p>
+      </div>
+      <div class="ms-lg-auto">
+        <button class="btn btn-orange-outline profile-edit-btn d-inline-flex align-items-center gap-2" type="button" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+          <i data-lucide="edit-3"></i>
+          Edit Profile
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="row g-3 mb-4">
+  {% if profile_stats %}
+    {% for stat in profile_stats %}
+      <div class="col-6 col-xl-3">
+        <div class="mentora-card profile-stat-card h-100 border-{{ stat.variant|default:'teal' }}">
+          <div class="card-body text-center">
+            <div class="profile-stat-icon gradient-{{ stat.variant|default:'teal' }} mx-auto mb-3">
+              <i data-lucide="{{ stat.icon|default:'award' }}"></i>
+            </div>
+            <div class="h3 text-gray-900 mb-1">{{ stat.value }}</div>
+            <p class="text-muted-soft mb-0">{{ stat.label }}</p>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <div class="col-6 col-xl-3">
+      <div class="mentora-card profile-stat-card h-100">
+        <div class="card-body text-center">
+          <div class="profile-stat-icon gradient-teal mx-auto mb-3">
+            <i data-lucide="award"></i>
+          </div>
+          <div class="h3 text-gray-900 mb-1">1,250</div>
+          <p class="text-muted-soft mb-0">Total Credits</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-xl-3">
+      <div class="mentora-card profile-stat-card h-100">
+        <div class="card-body text-center">
+          <div class="profile-stat-icon gradient-emerald mx-auto mb-3">
+            <i data-lucide="trending-up"></i>
+          </div>
+          <div class="h3 text-gray-900 mb-1">47</div>
+          <p class="text-muted-soft mb-0">Students Helped</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-xl-3">
+      <div class="mentora-card profile-stat-card h-100">
+        <div class="card-body text-center">
+          <div class="profile-stat-icon gradient-amber mx-auto mb-3">
+            <i data-lucide="star"></i>
+          </div>
+          <div class="h3 text-gray-900 mb-1">4.9</div>
+          <p class="text-muted-soft mb-0">Avg Rating</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-xl-3">
+      <div class="mentora-card profile-stat-card h-100">
+        <div class="card-body text-center">
+          <div class="profile-stat-icon gradient-purple mx-auto mb-3">
+            <i data-lucide="award"></i>
+          </div>
+          <div class="h3 text-gray-900 mb-1">12</div>
+          <p class="text-muted-soft mb-0">Badges</p>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+</section>
+
+<section class="mentora-card mb-4">
+  <div class="card-body">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+      <h2 class="h5 text-gray-900 mb-0">Badges &amp; Achievements</h2>
+      <span class="badge-soft teal">{{ profile.badge_summary|default:"12 unlocked" }}</span>
+    </div>
+    <div class="row g-3 profile-badges">
+      {% if profile_badges %}
+        {% for badge in profile_badges %}
+          <div class="col-6 col-md-4 col-lg-2">
+            <div class="profile-badge-tile {{ badge.earned|yesno:'earned,locked' }}" title="{{ badge.name }}">
+              <div class="profile-badge-icon gradient-{{ badge.variant|default:'teal' }}">
+                {{ badge.icon }}
+              </div>
+              <p class="text-center text-muted-soft small mb-0 mt-2">{{ badge.name }}</p>
+              {% if not badge.earned %}
+                <div class="profile-badge-lock">
+                  <span>🔒 Locked</span>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="col-6 col-md-4 col-lg-2">
+          <div class="profile-badge-tile earned">
+            <div class="profile-badge-icon gradient-teal">⚡</div>
+            <p class="text-center text-muted-soft small mb-0 mt-2">Quick Helper</p>
+          </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+          <div class="profile-badge-tile earned">
+            <div class="profile-badge-icon gradient-blue">🔢</div>
+            <p class="text-center text-muted-soft small mb-0 mt-2">Math Wizard</p>
+          </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+          <div class="profile-badge-tile earned">
+            <div class="profile-badge-icon gradient-purple">🏆</div>
+            <p class="text-center text-muted-soft small mb-0 mt-2">Top Contributor</p>
+          </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+          <div class="profile-badge-tile earned">
+            <div class="profile-badge-icon gradient-emerald">🤝</div>
+            <p class="text-center text-muted-soft small mb-0 mt-2">Team Player</p>
+          </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+          <div class="profile-badge-tile locked">
+            <div class="profile-badge-icon gradient-amber">💡</div>
+            <p class="text-center text-muted-soft small mb-0 mt-2">Problem Solver</p>
+            <div class="profile-badge-lock">
+              <span>🔒 Locked</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+          <div class="profile-badge-tile locked">
+            <div class="profile-badge-icon gradient-teal">👨‍🏫</div>
+            <p class="text-center text-muted-soft small mb-0 mt-2">Mentor Master</p>
+            <div class="profile-badge-lock">
+              <span>🔒 Locked</span>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+  <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content profile-modal">
+        <form method="post">
+          {% csrf_token %}
+          <div class="modal-header border-0">
+            <h5 class="modal-title" id="editProfileModalLabel">Edit Profile</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label text-muted-soft">Full Name</label>
+              <input type="text" class="form-control rounded-3" name="name" value="{{ profile.name }}">
+            </div>
+            <div class="mb-3">
+              <label class="form-label text-muted-soft">Major</label>
+              <input type="text" class="form-control rounded-3" name="major" value="{{ profile.major }}">
+            </div>
+            <div class="mb-0">
+              <label class="form-label text-muted-soft">Bio</label>
+              <textarea class="form-control rounded-3" rows="3" name="bio">{{ profile.bio }}</textarea>
+            </div>
+          </div>
+          <div class="modal-footer border-0 d-flex gap-3">
+            <button type="submit" class="btn btn-orange flex-grow-1">Save Changes</button>
+            <button type="button" class="btn btn-orange-soft rounded-3" data-bs-dismiss="modal">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endblock %}

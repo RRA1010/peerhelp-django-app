@@ -1,0 +1,15 @@
+@keyframes floatPulse {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.float-pulse {
+  animation: floatPulse 4s ease-in-out infinite;
+}

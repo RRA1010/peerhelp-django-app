@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% block title %}Submit Solution | PeerHelp{% endblock %}
+{% block body_class %}submit-solution-page{% endblock %}
+{% block content %}
+<section class="page-header mb-4">
+  <h1 class="display-6 text-gray-900 mb-1">Submit Your Solution</h1>
+  <p class="text-muted-soft mb-0">Provide a detailed explanation to help your fellow student.</p>
+</section>
+
+<section class="mentora-card mb-4 info-banner">
+  <div class="card-body d-flex align-items-start gap-3">
+    <div class="info-icon">
+      <i data-lucide="sparkles"></i>
+    </div>
+    <div>
+      <h3 class="h6 text-gray-900 mb-1">{{ problem.title }}</h3>
+      <div class="d-flex flex-wrap align-items-center gap-2 text-muted-soft small">
+        <span class="badge-soft teal text-capitalize">{{ problem.subject }}</span>
+        <span>•</span>
+        <span>Posted by {{ problem.author.name }}</span>
+        <span>•</span>
+        <span class="text-amber-600 d-inline-flex align-items-center gap-1">
+          <i data-lucide="award"></i>
+          {{ problem.credits }} credits
+        </span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<form method="post" enctype="multipart/form-data" id="solutionForm" class="solution-form" novalidate>
+  {% csrf_token %}
+  <section class="mentora-card mb-4">
+    <div class="card-header bg-transparent border-0 pb-0">
+      <h2 class="h5 text-gray-900 mb-0">Your Solution</h2>
+    </div>
+    <div class="card-body">
+      {% if solution_form.non_field_errors %}
+        <div class="alert alert-danger mb-3">
+          {% for error in solution_form.non_field_errors %}
+            <div>{{ error }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+      <div class="position-relative">
+        {{ solution_form.content }}
+      </div>
+      {{ solution_form.content.errors }}
+      <div class="d-flex justify-content-between align-items-center text-muted-soft small mt-2">
+        <span data-char-count="0">0 characters</span>
+        <span>Tip: Use clear formatting and explain each step</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="mentora-card mb-4">
+    <div class="card-header bg-transparent border-0 pb-0">
+      <h2 class="h5 text-gray-900 mb-0">Supporting Materials (Optional)</h2>
+    </div>
+    <div class="card-body">
+      <div class="upload-dropzone" data-upload-zone>
+        <i data-lucide="upload"></i>
+        <p class="mb-1">Upload images, diagrams, or worked examples</p>
+        <span>PNG, JPG, PDF (max 10MB each)</span>
+      </div>
+      <div class="mt-3">
+        {{ solution_form.attachments }}
+        {{ solution_form.attachments.errors }}
+      </div>
+      {% if attachments %}
+        <div class="row g-3 mt-3">
+          {% for file in attachments %}
+            <div class="col-6 col-md-4">
+              <div class="attachment-preview">
+                <i data-lucide="file-text"></i>
+                <span class="text-truncate">{{ file.name }}</span>
+                <button type="button" class="remove-btn" aria-label="Remove attachment">
+                  <i data-lucide="x"></i>
+                </button>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="mentora-card mb-4">
+    <div class="card-header bg-transparent border-0 pb-0 d-flex align-items-center justify-content-between">
+      <h2 class="h5 text-gray-900 mb-0 d-flex align-items-center gap-2">
+        <i data-lucide="sparkles" class="text-purple-500"></i>
+        AI Summary Preview
+      </h2>
+      <button type="button" class="btn btn-orange-outline btn-sm" data-ai-generate disabled>
+        Generate
+      </button>
+    </div>
+    <div class="card-body">
+      <div class="ai-summary" data-ai-output>
+        <p class="text-muted-soft mb-0">Click "Generate" to create an AI summary of your solution.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="mentora-card guideline-card mb-4">
+    <div class="card-body">
+      <h3 class="h6 text-gray-900 mb-3 d-flex align-items-center gap-2">
+        <i data-lucide="check-circle-2" class="text-blue-600"></i>
+        Solution Guidelines
+      </h3>
+      <ul class="list-unstyled mb-0 text-muted-soft small">
+        {% for tip in guidelines %}
+          <li class="d-flex gap-2 mb-2">
+            <span class="text-blue-600">•</span>
+            <span>{{ tip }}</span>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </section>
+
+  <div class="d-flex justify-content-between align-items-center mb-5">
+    <a class="btn btn-orange-outline" href="{% url 'problem-detail' problem.slug %}">Cancel</a>
+    <button type="submit" class="btn btn-orange submit-btn" disabled>Submit Solution</button>
+  </div>
+</form>
+
+<div class="modal fade" id="solutionSubmittedModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content glass-panel">
+      <div class="modal-body text-center p-5">
+        <div class="success-icon mb-3">
+          <i data-lucide="check-circle-2"></i>
+        </div>
+        <h4 class="text-gray-900 mb-2">Solution Submitted!</h4>
+        <p class="text-muted-soft mb-4">Your solution has been sent. You'll earn credits once it's accepted.</p>
+        <div class="d-flex flex-column gap-2">
+          <a class="btn btn-orange" href="{% url 'problem-detail' problem.slug %}">View Problem</a>
+          <a class="btn btn-orange-outline" href="{% url 'browse-problems' %}">Browse More Problems</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,9 @@
+<span class="avatar-pill {{ extra_classes }}">
+  {% if src %}
+    <img src="{{ src }}" alt="{{ alt|default:user_name }}" />
+  {% elif initials %}
+    {{ initials }}
+  {% else %}
+    {{ user_initials|default:"JD" }}
+  {% endif %}
+</span>

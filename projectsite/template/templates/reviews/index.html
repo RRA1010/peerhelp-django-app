@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}Ratings & Reviews | PeerHelp{% endblock %}
+{% block body_class %}reviews-page{% endblock %}
+{% block content %}
+<section class="page-header mb-4">
+  <div>
+    <h1 class="h2 text-gray-900 mb-2">Ratings &amp; Reviews</h1>
+    <p class="text-muted-soft mb-0">All feedback here comes from problems you have successfully solved.</p>
+  </div>
+</section>
+
+<section class="row g-4 mb-4">
+  <div class="col-12 col-lg-6">
+    <div class="mentora-card h-100 text-center">
+      <div class="card-body py-5">
+        {% with avg=average_rating|default:4.9 %}
+          <div class="display-2 text-gray-900 mb-3">{{ avg }}</div>
+          <div class="rating-stars-static mb-2">
+            {% for _ in '12345'|make_list %}
+              <i data-lucide="star" class="{% if forloop.counter <= avg %}text-warning filled{% else %}text-muted-soft{% endif %}"></i>
+            {% endfor %}
+          </div>
+          <p class="text-muted-soft mb-0">Based on {{ total_reviews|default:47 }} reviews</p>
+        {% endwith %}
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-lg-6">
+    <div class="mentora-card h-100">
+      <div class="card-body">
+        <div class="d-flex flex-column gap-3">
+          {% if rating_distribution %}
+            {% for item in rating_distribution %}
+              <div class="rating-distribution-row">
+                <div class="d-flex align-items-center gap-1 w-25">
+                  <span class="text-sm">{{ item.stars }}</span>
+                  <i data-lucide="star" class="text-warning"></i>
+                </div>
+                <div class="rating-progress flex-grow-1">
+                  <div class="rating-progress-bar" data-progress-width="{{ item.percentage }}"></div>
+                </div>
+                <span class="text-muted-soft text-end w-25">{{ item.count }}</span>
+              </div>
+            {% endfor %}
+          {% else %}
+            <div class="rating-distribution-row">
+              <div class="d-flex align-items-center gap-1 w-25">
+                <span class="text-sm">5</span>
+                <i data-lucide="star" class="text-warning"></i>
+              </div>
+              <div class="rating-progress flex-grow-1">
+                <div class="rating-progress-bar" data-progress-width="89"></div>
+              </div>
+              <span class="text-muted-soft text-end w-25">42</span>
+            </div>
+            <div class="rating-distribution-row">
+              <div class="d-flex align-items-center gap-1 w-25">
+                <span class="text-sm">4</span>
+                <i data-lucide="star" class="text-warning"></i>
+              </div>
+              <div class="rating-progress flex-grow-1">
+                <div class="rating-progress-bar" data-progress-width="9"></div>
+              </div>
+              <span class="text-muted-soft text-end w-25">4</span>
+            </div>
+            <div class="rating-distribution-row">
+              <div class="d-flex align-items-center gap-1 w-25">
+                <span class="text-sm">3</span>
+                <i data-lucide="star" class="text-warning"></i>
+              </div>
+              <div class="rating-progress flex-grow-1">
+                <div class="rating-progress-bar" data-progress-width="2"></div>
+              </div>
+              <span class="text-muted-soft text-end w-25">1</span>
+            </div>
+            <div class="rating-distribution-row">
+              <div class="d-flex align-items-center gap-1 w-25">
+                <span class="text-sm">2</span>
+                <i data-lucide="star" class="text-warning"></i>
+              </div>
+              <div class="rating-progress flex-grow-1">
+                <div class="rating-progress-bar" data-progress-width="0"></div>
+              </div>
+              <span class="text-muted-soft text-end w-25">0</span>
+            </div>
+            <div class="rating-distribution-row">
+              <div class="d-flex align-items-center gap-1 w-25">
+                <span class="text-sm">1</span>
+                <i data-lucide="star" class="text-warning"></i>
+              </div>
+              <div class="rating-progress flex-grow-1">
+                <div class="rating-progress-bar" data-progress-width="0"></div>
+              </div>
+              <span class="text-muted-soft text-end w-25">0</span>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="mentora-card">
+  <div class="card-header bg-transparent border-0 pb-0 px-4 pt-4">
+    <h2 class="h5 text-gray-900 mb-0">Student Reviews</h2>
+  </div>
+  <div class="card-body p-4">
+    <div class="d-flex flex-column gap-4">
+      {% if reviews %}
+        {% for review in reviews %}
+          <div class="review-entry">
+            <div class="d-flex align-items-start gap-3">
+              {% include "components/avatar.html" with src=review.author.avatar initials=review.author.initials|default:review.author.name|first extra_classes="review-avatar" %}
+              <div class="flex-grow-1">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+                  <div>
+                    <h3 class="h6 text-gray-900 mb-1">{{ review.author.name }}</h3>
+                    <div class="rating-stars-static small">
+                      {% for _ in '12345'|make_list %}
+                        <i data-lucide="star" class="{% if forloop.counter <= review.rating %}text-warning filled{% else %}text-muted-soft{% endif %}"></i>
+                      {% endfor %}
+                    </div>
+                  </div>
+                  <span class="text-muted-soft small">{{ review.time }}</span>
+                </div>
+                <p class="text-muted-soft mb-0">{{ review.comment }}</p>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p class="text-muted-soft mb-0">No reviews yet.</p>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}
