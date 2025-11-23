@@ -161,9 +161,7 @@
   <div class="card-body p-4">
     {% if owner_solver_details %}
     <div class="d-flex align-items-center gap-3 mb-3">
-      {% include "components/avatar.html" with src=owner_solver_details.avatar
-      initials=owner_solver_details.initials|default:owner_solver_details.name|first
-      extra_classes="solver-avatar" %}
+      {% include "components/avatar.html" with src=owner_solver_details.avatar initials=owner_solver_details.initials extra_classes="solver-avatar" %}
       <div>
         <p class="text-muted-soft small mb-1">Accepted by</p>
         <div class="h6 text-gray-900 mb-0">{{ owner_solver_details.name }}</div>
