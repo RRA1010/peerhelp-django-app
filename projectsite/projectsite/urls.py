@@ -14,7 +14,8 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.urls import path
+from django.urls import path, include
+from django.contrib import admin
 
 from peerhelp import views
 
@@ -44,5 +45,7 @@ urlpatterns = [
     path('reviews/', views.reviews_view, name='ratings'),
     path('map/', views.map_view, name='map-view'),
     path('verify-id/', views.verify_id_view, name='verification'),
+    path('accounts/', include('allauth.urls')),
+    path('admin/', admin.site.urls),
 ]
 
