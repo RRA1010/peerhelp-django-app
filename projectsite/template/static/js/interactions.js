@@ -245,4 +245,29 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
   }
+
+  // Ensure mobile nav links close the drawer before navigating
+  const mobileSidebarElement = document.getElementById('mobileSidebar');
+  if (mobileSidebarElement && window.bootstrap) {
+    const mobileNavLinks = mobileSidebarElement.querySelectorAll('[data-mobile-nav-link]');
+    if (mobileNavLinks.length) {
+      const getOffcanvasInstance = () => bootstrap.Offcanvas.getOrCreateInstance(mobileSidebarElement);
+      mobileNavLinks.forEach((link) => {
+        link.addEventListener('click', (event) => {
+          const destination = link.getAttribute('href');
+          if (!destination || destination.startsWith('#')) {
+            return;
+          }
+          event.preventDefault();
+          const offcanvasInstance = getOffcanvasInstance();
+          if (offcanvasInstance) {
+            offcanvasInstance.hide();
+          }
+          setTimeout(() => {
+            window.location.assign(destination);
+          }, 120);
+        });
+      });
+    }
+  }
 });
