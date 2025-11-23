@@ -33,7 +33,6 @@ class UserProfile(models.Model):
     id_document = models.FileField(upload_to='ids/', blank=True, null=True)
     id_status = models.CharField(max_length=20, choices=ID_STATUS_CHOICES, default=ID_STATUS_PENDING)
     location_text = models.CharField(max_length=255, blank=True)
-    id_document_hash = models.CharField(max_length=64, blank=True, null=True, unique=True)
 
     def __str__(self) -> str:
         return f"Profile for {self.user}"
