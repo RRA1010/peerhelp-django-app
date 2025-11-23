@@ -852,46 +852,34 @@ def verify_id_view(request: HttpRequest) -> HttpResponse:
 			api_key = os.getenv("OCRSPACE_API_KEY")
 			uploaded_file = request.FILES.get('id_document')
 
-			print(f"[DEBUG] API key present: {bool(api_key)}, File present: {bool(uploaded_file)}")
-
 			if uploaded_file and api_key:
 				try:
 					uploaded_file.seek(0)
-					print("[DEBUG] Calling OCR API...")
 					response = requests.post('https://api.ocr.space/parse/image', files={'file': (uploaded_file.name, uploaded_file.read(), uploaded_file.content_type)}, data={'apikey': api_key,}, timeout=30)
-					print(f"[DEBUG] OCR status: {response.status_code}")
 					response.raise_for_status()
 					result = response.json()
-					print(f"[DEBUG] OCR result: {result}")
 
 					extracted_text = ""
 					if result.get("ParsedResults"):
 						extracted_text = result["ParsedResults"][0].get("ParsedText", "")
-					print(f"[DEBUG] Extracted: {extracted_text[:200] if extracted_text else 'EMPTY'}")
 
 					user_name = request.user.display_name or request.user.get_full_name()
 					name_parts = user_name.lower().split()
 					lowered_text = extracted_text.lower()
-					print(f"[DEBUG] User: {user_name}, Parts: {name_parts}")
 
 					has_psu = "palawan state" in lowered_text or "psu" in lowered_text
 					has_name = any(part in lowered_text for part in name_parts if len(part) >= 2)
-					print(f"[DEBUG] has_psu: {has_psu}, has_name: {has_name}")
 
 					if has_psu and has_name:
 						profile.id_status = UserProfile.ID_STATUS_VERIFIED
 						messages.success(request, 'ID verified successfully.')
-						print("[DEBUG] Status: VERIFIED")
 					else:
 						profile.id_status = UserProfile.ID_STATUS_REJECTED
 						messages.error(request, 'ID verification failed.')
-						print("[DEBUG] Status: REJECTED")
-				except requests.exceptions.RequestException as e:
-					print(f"[DEBUG] Request error: {e}")
+				except requests.exceptions.RequestException:
 					profile.id_status = UserProfile.ID_STATUS_PENDING
 					messages.warning(request, 'ID uploaded but verification service is currently not available. Status set to pending for manual review.')
 			else:
-				print("[DEBUG] Missing API key or file - Status: PENDING")
 				profile.id_status = UserProfile.ID_STATUS_PENDING
 
 			profile.save(update_fields=['id_status'])
