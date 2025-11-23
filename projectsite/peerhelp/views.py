@@ -1,7 +1,12 @@
 from __future__ import annotations
 
+from http.client import TOO_EARLY
+import os
 import random
+from sqlite3 import paramstyle
+import requests
 from typing import Dict, List
+import hashlib
 
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
@@ -127,6 +132,7 @@ def _serialize_problem(problem: Problem) -> Dict[str, object]:
 			'credits': owner_profile.credits,
 			'solved': owner_profile.user.solutions.filter(is_accepted=True).count(),
 			'rating': owner_profile.rating,
+			'is_verified': owner_profile.id_status == UserProfile.ID_STATUS_VERIFIED,
 		},
 		'attachments': [],
 	}
@@ -179,7 +185,7 @@ def register_view(request: HttpRequest) -> HttpResponse:
 			profile = _ensure_profile(user)
 			profile.location_text = request.POST.get('university', '')
 			profile.save(update_fields=['location_text'])
-			login(request, user)
+			login(request, user, backend='django.contrib.auth.backends.ModelBackend')
 			messages.success(request, 'Account created successfully. Welcome to Mentora!')
 			return redirect('dashboard')
 		messages.error(request, 'Please correct the highlighted errors and try again.')
@@ -447,6 +453,7 @@ def problem_detail_view(request: HttpRequest, slug: str) -> HttpResponse:
 		'owner_solution_author_name': owner_solution_author_name,
 		'problem_edit_url': reverse('problem-edit', args=[problem.slug]) if is_owner else '',
 		'problem_delete_url': reverse('problem-delete', args=[problem.slug]) if is_owner else '',
+		'is_user_verified': _ensure_profile(request.user).id_status == UserProfile.ID_STATUS_VERIFIED,
 	}
 	return render(request, 'problems/detail.html', context)
 
@@ -458,6 +465,10 @@ def problem_accept_view(request: HttpRequest, slug: str) -> HttpResponse:
 		problem = get_object_or_404(Problem.objects.select_for_update(), slug=slug)
 		if problem.status == Problem.STATUS_SOLVED:
 			messages.info(request, 'This problem has already been solved.')
+			return redirect('problem-detail', slug=slug)
+		solver_profile = _ensure_profile(request.user)
+		if solver_profile.id_status != UserProfile.ID_STATUS_VERIFIED:
+			messages.error(request, 'You must verify your ID before accepting problems.')
 			return redirect('problem-detail', slug=slug)
 		if problem.owner_id == request.user.id:
 			messages.error(request, 'You cannot accept your own problem.')
@@ -744,6 +755,7 @@ def profile_view(request: HttpRequest) -> HttpResponse:
 			'joined': profile.user.date_joined.strftime('%B %Y'),
 			'bio': profile.bio,
 			'badge_summary': f"{len(profile_badges)} unlocked",
+			'is_verified': profile.id_status == UserProfile.ID_STATUS_VERIFIED,
 		},
 		'profile_stats': profile_stats,
 		'profile_badges': profile_badges,
@@ -828,19 +840,66 @@ def map_view(request: HttpRequest) -> HttpResponse:
 def verify_id_view(request: HttpRequest) -> HttpResponse:
 	profile = _ensure_profile(request.user)
 	form = IDVerificationForm(instance=profile)
+
+	if request.method == 'POST' and profile.id_status == UserProfile.ID_STATUS_VERIFIED:
+		messages.info(request, 'Your ID is already verified.')
+		return redirect('verification')
+
 	if request.method == 'POST':
 		form = IDVerificationForm(request.POST, request.FILES, instance=profile)
 		if form.is_valid():
 			form.save()
-			profile.id_status = UserProfile.ID_STATUS_PENDING
-			profile.save(update_fields=['id_status'])
-			messages.success(request, 'ID uploaded successfully. Status set to pending verification.')
+			
+			api_key = os.getenv("OCRSPACE_API_KEY")
+			uploaded_file = request.FILES.get('id_document')
+	
+			if uploaded_file and api_key:
+				uploaded_file.seek(0)
+				file_hash = hashlib.sha256(uploaded_file.read()).hexdigest()
+				existing = UserProfile.objects.filter(id_document_hash=file_hash).exclude(user=request.user).first()
+				if existing:
+					messages.error(request, 'This ID has already been used by another user.')
+					return redirect('verification')
+				try:
+					uploaded_file.seek(0)
+					response = requests.post('https://api.ocr.space/parse/image', files={'file': (uploaded_file.name, uploaded_file.read(), uploaded_file.content_type)}, data={'apikey': api_key,}, timeout=30)
+					response.raise_for_status()
+					result = response.json()
+     
+					extracted_text = ""
+					if result.get("ParsedResults"):
+						extracted_text = result["ParsedResults"][0].get("ParsedText", "")
+
+					user_name = request.user.display_name or request.user.get_full_name()
+					name_parts = user_name.lower().split()
+					lowered_text = extracted_text.lower()
+
+					has_psu = "palawan state" in lowered_text or "psu" in lowered_text
+					has_name = any(part in lowered_text for part in name_parts if len(part) >= 2)
+	
+					if has_psu and has_name:
+						profile.id_status = UserProfile.ID_STATUS_VERIFIED
+						profile.id_document_hash = file_hash
+						messages.success(request, 'ID verified successfully.')
+					else:
+						profile.id_status = UserProfile.ID_STATUS_REJECTED
+						messages.error(request, 'ID verification failed.')
+				except requests.exceptions.RequestException as e:
+					profile.id_status = UserProfile.ID_STATUS_PENDING
+					messages.warning(request, 'ID uploaded but verification service is currently not available. Status set to pending for manual review.')
+			else:
+				profile.id_status = UserProfile.ID_STATUS_PENDING
+    
+			profile.save(update_fields=['id_status', 'id_document_hash'])
 			return redirect('verification')
 		messages.error(request, 'Unable to upload ID. Please try again.')
-
-	context = {
+  
+	context	= {
 		**_base_context(request, current_page='verification'),
 		'id_form': form,
 		'id_status': profile.id_status,
 	}
+ 
 	return render(request, 'profile/verification.html', context)
+       
+
