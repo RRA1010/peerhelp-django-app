@@ -63,7 +63,7 @@ INSTALLED_APPS = [
     
 ]
 
-SITE_ID = 1
+SITE_ID = 2
 
 #for OAuth
 AUTHENTICATION_BACKENDS = [

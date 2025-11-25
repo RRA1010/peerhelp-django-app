@@ -36,6 +36,7 @@ from .models import (
 	SolutionAttachment,
 	User,
 	UserProfile,
+	UserBadge,
 )
 
 
@@ -108,21 +109,21 @@ def _serialize_problem(problem: Problem) -> Dict[str, object]:
 	owner_name = owner_profile.user.display_name or owner_profile.user.get_full_name() or owner_profile.user.username
 	tags = _serialize_tags(problem.tags)
 	return {
-		'id': problem.id,
+		'id': problem.owner, #owner_id to owner
 		'slug': problem.slug,
 		'title': problem.title,
 		'subject': problem.subject or 'General',
 		'description': problem.description,
 		'tags': tags or ['General'],
 		'mode': problem.mode,
-		'mode_label': problem.get_mode_display(),
-		'status_label': problem.get_status_display(),
+		'mode_label': problem.get_mode_display(), #function?
+		'status_label': problem.get_status_display(), #function?
 		'urgency': problem.urgency,
 		'status': problem.status,
-		'owner_id': problem.owner_id,
-		'current_solver_id': problem.current_solver_id,
+		'owner_id': problem.pk, #owner_id to pk
+		'current_solver_id': problem.current_solver, #non-existent field to current_solver_id
 		'time': f"{timesince(problem.created_at)} ago",
-		'responses': problem.solutions.count(),
+		'responses': problem.solutions.count(), #problem has no solution attribute
 		'credits': problem.credits_offered,
 		'author': {
 			'name': owner_name,
@@ -141,7 +142,7 @@ def _serialize_solution(solution: Solution) -> Dict[str, object]:
 	author_profile = _ensure_profile(solution.author)
 	author_name = author_profile.user.display_name or author_profile.user.get_full_name() or author_profile.user.username
 	return {
-		'id': solution.id,
+		'id': solution.pk,
 		'content': solution.content,
 		'accepted': solution.is_accepted,
 		'time': f"{timesince(solution.created_at)} ago",
@@ -246,7 +247,7 @@ def dashboard_view(request: HttpRequest) -> HttpResponse:
 			'variant': 'teal',
 			'url_name': 'problem-detail',
 			'slug': p.slug,
-			'meta': f"{p.solutions.count()} responses",
+			'meta': f"{Solution.objects.filter(problem=p).count()} responses", #changed
 			'badge': {
 				'label': p.status.replace('_', ' ').title(),
 				'variant': 'teal',
@@ -379,14 +380,14 @@ def problem_browse_view(request: HttpRequest) -> HttpResponse:
 def problem_detail_view(request: HttpRequest, slug: str) -> HttpResponse:
 	problem = get_object_or_404(Problem.objects.select_related('owner', 'current_solver'), slug=slug)
 	solutions = problem.solutions.select_related('author').order_by('-created_at')
-	is_owner = problem.owner_id == request.user.id
-	is_current_solver = problem.current_solver_id == request.user.id
-	is_locked_by_other = problem.current_solver_id is not None and not is_current_solver
+	is_owner = problem.owner.pk == request.user.pk #id to pk
+	is_current_solver = problem.current_solver == request.user.pk #id to pk, current_solver_id to current solver
+	is_locked_by_other = problem.current_solver is not None and not is_current_solver
 	is_solved = problem.status == Problem.STATUS_SOLVED
 	can_accept = (
 		not is_owner
 		and not is_solved
-		and (problem.current_solver_id in {None, request.user.id})
+		and (problem.current_solver in {None, request.user.pk})
 	)
 	solver_details = None
 	owner_solver_solution = None
@@ -419,7 +420,7 @@ def problem_detail_view(request: HttpRequest, slug: str) -> HttpResponse:
 				or owner_solver_solution.author.get_full_name()
 				or owner_solver_solution.author.username
 			)
-			owner_solution_matches_solver = owner_solver_solution.author_id == problem.current_solver_id
+			owner_solution_matches_solver = owner_solver_solution.author.pk == problem.current_solver #author_id to pk, current_solver_id to current_solver
 			if owner_solution_matches_solver:
 				owner_solver_review = Review.objects.filter(solution=owner_solver_solution, reviewer=request.user).first()
 				if not owner_solver_review and not owner_solver_solution.is_accepted:
@@ -427,7 +428,7 @@ def problem_detail_view(request: HttpRequest, slug: str) -> HttpResponse:
 	solution_payload = []
 	for solution in solutions:
 		solution_data = _serialize_solution(solution)
-		can_modify = solution.author_id == request.user.id
+		can_modify = solution.author.pk == request.user.pk #id to pk
 		solution_data.update({
 			'edit_url': reverse('solution-edit', args=[solution.id]) if can_modify else '',
 			'delete_url': reverse('solution-delete', args=[solution.id]) if can_modify else '',
@@ -469,15 +470,15 @@ def problem_accept_view(request: HttpRequest, slug: str) -> HttpResponse:
 		if solver_profile.id_status != UserProfile.ID_STATUS_VERIFIED:
 			messages.error(request, 'You must verify your ID before accepting problems.')
 			return redirect('problem-detail', slug=slug)
-		if problem.owner_id == request.user.id:
+		if problem.owner.pk == request.user.pk: #id to pk
 			messages.error(request, 'You cannot accept your own problem.')
 			return redirect('problem-detail', slug=slug)
-		if problem.current_solver_id and problem.current_solver_id != request.user.id:
+		if problem.current_solver and problem.current_solver.pk != request.user.pk:
 			messages.error(request, 'Another solver is already working on this problem.')
 			return redirect('problem-detail', slug=slug)
 
 		updated_fields: List[str] = []
-		if problem.current_solver_id != request.user.id:
+		if problem.current_solver != request.user.pk:
 			problem.current_solver = request.user
 			updated_fields.append('current_solver')
 		if problem.status != Problem.STATUS_IN_PROGRESS:
@@ -494,7 +495,7 @@ def problem_accept_view(request: HttpRequest, slug: str) -> HttpResponse:
 def problem_release_view(request: HttpRequest, slug: str) -> HttpResponse:
 	with transaction.atomic():
 		problem = get_object_or_404(Problem.objects.select_for_update(), slug=slug)
-		if problem.current_solver_id != request.user.id:
+		if problem.current_solver != request.user.pk:
 			messages.error(request, 'You are not the current solver for this problem.')
 			return redirect('problem-detail', slug=slug)
 		if problem.status == Problem.STATUS_SOLVED:
@@ -565,13 +566,13 @@ def problem_delete_view(request: HttpRequest, slug: str) -> HttpResponse:
 @login_required
 def solution_submit_view(request: HttpRequest, slug: str) -> HttpResponse:
 	problem = get_object_or_404(Problem, slug=slug)
-	if problem.owner_id == request.user.id:
+	if problem.owner.pk == request.user.pk:
 		messages.error(request, 'You cannot submit a solution to your own problem.')
 		return redirect('problem-detail', slug=slug)
 	if problem.status == Problem.STATUS_SOLVED:
 		messages.info(request, 'This problem is already solved.')
 		return redirect('problem-detail', slug=slug)
-	if problem.current_solver_id != request.user.id:
+	if problem.current_solver != request.user.pk:
 		messages.error(request, 'Please accept the problem before submitting a solution.')
 		return redirect('problem-detail', slug=slug)
 	form = SolutionForm()
@@ -580,7 +581,7 @@ def solution_submit_view(request: HttpRequest, slug: str) -> HttpResponse:
 		if form.is_valid():
 			with transaction.atomic():
 				locked_problem = Problem.objects.select_for_update().get(pk=problem.pk)
-				if locked_problem.current_solver_id != request.user.id:
+				if locked_problem.current_solver != request.user.pk:
 					messages.error(request, 'The lock for this problem is no longer assigned to you.')
 					return redirect('problem-detail', slug=locked_problem.slug)
 				solution = form.save(commit=False)
@@ -591,7 +592,7 @@ def solution_submit_view(request: HttpRequest, slug: str) -> HttpResponse:
 					SolutionAttachment.objects.create(solution=solution, file=attachment)
 				AISummary.objects.create(problem=locked_problem, summary_text=_generate_summary_placeholder(solution.content))
 				fields_to_update: List[str] = []
-				if locked_problem.current_solver_id != request.user.id:
+				if locked_problem.current_solver != request.user.pk:
 					locked_problem.current_solver = request.user
 					fields_to_update.append('current_solver')
 				if locked_problem.status != Problem.STATUS_IN_PROGRESS:
@@ -625,9 +626,9 @@ def solution_accept_view(request: HttpRequest, pk: int) -> HttpResponse:
 		pk=pk,
 	)
 	problem = solution.problem
-	if problem.owner_id != request.user.id:
+	if problem.owner.pk != request.user.pk:
 		return HttpResponseForbidden('Only the problem owner can accept a solution.')
-	if problem.current_solver_id != solution.author_id:
+	if problem.current_solver != solution.author.pk:
 		messages.error(request, 'This solution does not belong to the current solver.')
 		return redirect('problem-detail', slug=problem.slug)
 	form = ReviewForm(request.POST)
@@ -677,7 +678,7 @@ def solution_edit_view(request: HttpRequest, pk: int) -> HttpResponse:
 		'guidelines': ['Update your content below and resubmit.'],
 		'attachments': [
 			{'name': attachment.file.name.split('/')[-1], 'type': attachment.file.name.split('.')[-1].upper()}
-			for attachment in solution.attachments.all()
+			for attachment in SolutionAttachment.objects.filter(solution=solution) #experiment
 		],
 	}
 	return render(request, 'problems/submit.html', context)
@@ -730,7 +731,7 @@ def profile_view(request: HttpRequest) -> HttpResponse:
 		{'label': 'Total Credits', 'value': profile.credits, 'icon': 'award', 'variant': 'teal'},
 		{'label': 'Students Helped', 'value': Review.objects.filter(reviewee=request.user).count(), 'icon': 'users', 'variant': 'emerald'},
 		{'label': 'Average Rating', 'value': profile.rating, 'icon': 'star', 'variant': 'amber'},
-		{'label': 'Badges Earned', 'value': request.user.badges.count(), 'icon': 'shield', 'variant': 'purple'},
+		{'label': 'Badges Earned', 'value': UserBadge.objects.filter(user=request.user).count(), 'icon': 'shield', 'variant': 'purple'}, #user has no fk to badges
 	]
 
 	profile_badges = [
@@ -740,7 +741,7 @@ def profile_view(request: HttpRequest) -> HttpResponse:
 			'variant': 'teal',
 			'earned': True,
 		}
-		for badge in request.user.badges.select_related('badge')
+		for badge in UserBadge.objects.filter(user=request.user).select_related('badge') 
 	]
 
 	context = {
@@ -809,7 +810,7 @@ def map_view(request: HttpRequest) -> HttpResponse:
 	for idx, problem in enumerate(problems):
 		map_markers.append(
 			{
-				'id': str(problem.id),
+				'id': str(problem.pk), #pk as .id not working as ref
 				'variant': marker_variants[idx % len(marker_variants)],
 				'top': 25 + (idx * 11) % 50,
 				'left': 30 + (idx * 17) % 40,
@@ -817,7 +818,7 @@ def map_view(request: HttpRequest) -> HttpResponse:
 		)
 		in_person_requests.append(
 			{
-				'id': str(problem.id),
+				'id': str(problem.pk), #pk as .id not working as ref
 				'title': problem.title,
 				'subject': problem.subject or 'General',
 				'location': problem.location_label or 'On-campus location',
@@ -863,7 +864,7 @@ def verify_id_view(request: HttpRequest) -> HttpResponse:
 					if result.get("ParsedResults"):
 						extracted_text = result["ParsedResults"][0].get("ParsedText", "")
 
-					user_name = request.user.display_name or request.user.get_full_name()
+					user_name = request.user.display_name or request.user.get_full_name() #get_full_name() non-existent function
 					name_parts = user_name.lower().split()
 					lowered_text = extracted_text.lower()
 

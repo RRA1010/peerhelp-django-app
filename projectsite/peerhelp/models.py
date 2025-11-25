@@ -35,7 +35,7 @@ class UserProfile(models.Model):
     location_text = models.CharField(max_length=255, blank=True)
 
     def __str__(self) -> str:
-        return f"Profile for {self.user}"
+        return f"Profile for {self.user}"   
 
 
 class Badge(models.Model):
