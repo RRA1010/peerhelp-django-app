@@ -214,6 +214,3 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
-# Uploaded media files (contains sensitive ID documents)
-media/
-projectsite/media/
