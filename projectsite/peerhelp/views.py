@@ -347,7 +347,8 @@ def register_view(request: HttpRequest) -> HttpResponse:
 			profile = ensure_profile(user)
 			profile.location_text = request.POST.get('university', '')
 			profile.save(update_fields=['location_text'])
-			login(request, user)
+			default_backend = (settings.AUTHENTICATION_BACKENDS or ['django.contrib.auth.backends.ModelBackend'])[0]
+			login(request, user, backend=default_backend)
 			return flash_redirect(request, 'success', 'Account created successfully. Welcome to Mentora!', 'dashboard')
 		messages.error(request, 'Please correct the highlighted errors and try again.')
 
