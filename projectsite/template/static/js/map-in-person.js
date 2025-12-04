@@ -44,6 +44,8 @@
     { lat: 9.7762117, lng: 118.7353107 }
   ];
 
+  let mapInitialized = false;
+
   const escapeHtml = (value) => {
     if (typeof value !== 'string') {
       return '';
@@ -105,10 +107,10 @@
 
   const initMapPage = () => {
     const mapContainer = document.getElementById('inPersonMap');
-    if (!mapContainer) {
+    if (!mapContainer || mapInitialized) {
       return;
     }
-    const mapsApiKey = mapContainer.dataset.googleMapsKey || '';
+    mapInitialized = true;
     const requestsElement = document.getElementById('inPersonRequestsData');
     const requestData = requestsElement ? JSON.parse(requestsElement.textContent) : [];
     const cards = document.querySelectorAll('[data-request-card]');
@@ -140,7 +142,7 @@
       searchInput.addEventListener('input', applySearch);
     }
 
-    const initMap = () => {
+    const initializeMap = () => {
       const campusBounds = new google.maps.LatLngBounds();
       campusPath.forEach((coord) => campusBounds.extend(coord));
 
@@ -367,31 +369,20 @@
       }
     };
 
-    const loadGoogleMaps = () => {
-      if (!mapsApiKey) {
-        console.warn('Google Maps API key missing. Map view disabled.');
-        return;
-      }
-      if (window.google && window.google.maps) {
-        initMap();
-        return;
-      }
-      const existingScript = document.querySelector('script[data-google-maps]');
-      if (existingScript) {
-        existingScript.addEventListener('load', initMap, { once: true });
-        return;
-      }
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${mapsApiKey}&libraries=geometry`;
-      script.async = true;
-      script.defer = true;
-      script.dataset.googleMaps = 'true';
-      script.addEventListener('load', initMap, { once: true });
-      document.head.appendChild(script);
-    };
-
-    loadGoogleMaps();
+    initializeMap();
   };
 
-  document.addEventListener('DOMContentLoaded', initMapPage);
+  const runWhenReady = (callback) => {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', callback, { once: true });
+    } else {
+      callback();
+    }
+  };
+
+  function initMap() {
+    runWhenReady(initMapPage);
+  }
+
+  window.initMap = initMap;
 })();

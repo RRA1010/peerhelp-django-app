@@ -44,12 +44,14 @@
     { lat: 9.7762117, lng: 118.7353107 }
   ];
 
+  let mapInitialized = false;
+
   const initLocationPicker = () => {
     const mapContainer = document.getElementById('psuMap');
-    if (!mapContainer) {
+    if (!mapContainer || mapInitialized) {
       return;
     }
-    const mapsApiKey = mapContainer.dataset.googleMapsKey || '';
+    mapInitialized = true;
     const latInput = document.getElementById('meeting_lat');
     const lngInput = document.getElementById('meeting_lng');
     const statusLabel = document.querySelector('[data-location-status]');
@@ -83,7 +85,7 @@
       return inside;
     };
 
-    const initMap = () => {
+    const initializeMap = () => {
       const map = new google.maps.Map(mapContainer, {
         center: { lat: 9.7775, lng: 118.7335 },
         zoom: 18,
@@ -150,31 +152,20 @@
       }
     };
 
-    const loadGoogleMaps = () => {
-      if (!mapsApiKey) {
-        console.warn('Google Maps API key missing. Location picker disabled.');
-        return;
-      }
-      if (window.google && window.google.maps && window.google.maps.geometry) {
-        initMap();
-        return;
-      }
-      const existingScript = document.querySelector('script[data-google-maps]');
-      if (existingScript) {
-        existingScript.addEventListener('load', initMap, { once: true });
-        return;
-      }
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${mapsApiKey}&libraries=geometry`;
-      script.async = true;
-      script.defer = true;
-      script.dataset.googleMaps = 'true';
-      script.addEventListener('load', initMap, { once: true });
-      document.head.appendChild(script);
-    };
-
-    loadGoogleMaps();
+    initializeMap();
   };
 
-  document.addEventListener('DOMContentLoaded', initLocationPicker);
+  const runWhenReady = (callback) => {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', callback, { once: true });
+    } else {
+      callback();
+    }
+  };
+
+  function initMap() {
+    runWhenReady(initLocationPicker);
+  }
+
+  window.initMap = initMap;
 })();

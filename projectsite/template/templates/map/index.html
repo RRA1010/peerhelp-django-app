@@ -54,5 +54,6 @@
 
 {% block extra_js %}
   {{ block.super }}
+  <script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap" async defer></script>
   <script src="{% static 'js/map-in-person.js' %}" defer></script>
 {% endblock %}
