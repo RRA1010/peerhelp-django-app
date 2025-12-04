@@ -730,12 +730,7 @@ def reviews_view(request: HttpRequest) -> HttpResponse:
 def map_view(request: HttpRequest) -> HttpResponse:
 	problems = (
 		Problem.objects
-		.filter(
-			in_person_mode=True,
-			meeting_lat__isnull=False,
-			meeting_lng__isnull=False,
-			status__in=[Problem.STATUS_OPEN, Problem.STATUS_IN_PROGRESS],
-		)
+		.filter(in_person_mode=True, meeting_lat__isnull=False, meeting_lng__isnull=False)
 		.select_related('owner')
 		.order_by('-updated_at')
 	)
