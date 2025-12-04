@@ -4,7 +4,7 @@
 {% block body_class %}auth-body{% endblock %}
 {% block app_shell %}
 <section class="auth-shell">
-  <span
+   <span
     class="auth-orb teal"
     style="width: 18rem; height: 18rem; top: 4rem; left: 8%"
   ></span>
@@ -48,8 +48,7 @@
             <span class="text-gradient-teal">Grow Together</span>
           </h1>
           <p class="fs-5 text-muted-soft mb-4">
-            Connect with fellow students for peer-to-peer guidance and
-            collaborative learning.
+            Connect with fellow students for peer-to-peer guidance and collaborative learning.
           </p>
           <div class="metric-grid">
             <div class="metric-card text-center">
@@ -74,9 +73,7 @@
             <div class="brand-pill d-inline-flex d-lg-none mb-3">
               <div class="brand-mark shadow-emerald">
                 <img
-                  src="{% static 'img/logo.png' %}"
-                  alt="PeerHelp"
-                  class="brand-logo"
+                  src="{% static 'img/logo.png' %}" alt="PeerHelp" class="brand-logo"
                 />
               </div>
               <span class="fs-5 text-teal-600">PEERHELP</span>
@@ -92,18 +89,10 @@
           <form method="post" class="row gy-4">
             {% csrf_token %}
             <div class="col-12">
-              <label class="form-label small text-muted-soft"
-                >Email Address</label
-              >
+              <label class="form-label small text-muted-soft">Email Address</label>
               <div class="position-relative">
                 <span class="input-icon"><i data-lucide="mail"></i></span>
-                <input
-                  type="email"
-                  name="email"
-                  class="form-control input-control"
-                  placeholder="you@example.com"
-                  required
-                />
+                <input type="email" name="email" class="form-control input-control" placeholder="you@example.com" required />
               </div>
             </div>
 
@@ -111,43 +100,20 @@
               <label class="form-label small text-muted-soft">Password</label>
               <div class="position-relative">
                 <span class="input-icon"><i data-lucide="lock"></i></span>
-                <input
-                  id="loginPassword"
-                  type="password"
-                  name="password"
-                  class="form-control input-control pe-5"
-                  placeholder="Enter your password"
-                  required
-                />
-                <button
-                  class="toggle-password"
-                  type="button"
-                  aria-label="Toggle password visibility"
-                  data-toggle-password="#loginPassword"
-                >
+                <input id="loginPassword" type="password" name="password" class="form-control input-control pe-5" placeholder="Enter your password" required />
+                <button class="toggle-password" type="button" aria-label="Toggle password visibility" data-toggle-password="#loginPassword">
                   <i data-lucide="eye" class="eye-open"></i>
                   <i data-lucide="eye-off" class="eye-off"></i>
                 </button>
               </div>
             </div>
 
-            <div
-              class="col-12 d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center small"
-            >
+            <div class="col-12 d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center small">
               <div class="form-check text-muted-soft">
-                <input
-                  class="form-check-input"
-                  type="checkbox"
-                  value="1"
-                  id="rememberMe"
-                />
-                <label class="form-check-label" for="rememberMe"
-                  >Remember me</label
-                >
+                <input class="form-check-input" type="checkbox" value="1" id="rememberMe" />
+                <label class="form-check-label" for="rememberMe">Remember me</label>
               </div>
-              <button type="button" class="btn btn-orange-link p-0 fw-semibold">
-                Forgot password?
-              </button>
+              <button type="button" class="btn btn-orange-link p-0 fw-semibold">Forgot password?</button>
             </div>
 
             <div class="col-12 text-center">
@@ -157,50 +123,28 @@
 
           <div class="py-3 position-relative my-4 text-center">
             <div class="border-top border-gray-200"></div>
-            <span
-              class="position-absolute top-50 start-50 translate-middle px-3 small text-muted-soft bg-white"
-              >Or continue with</span
-            >
+            <span class="position-absolute top-50 start-50 translate-middle px-3 small text-muted-soft bg-white">Or continue with</span>
           </div>
 
           <div class="row g-3 justify-content-center">
             <div class="col-12 col-sm-8">
-              <a href="{% provider_login_url 'google' %}">
-                <button type="button" class="social-btn w-100">
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                  >
-                    <path
-                      fill="#4285F4"
-                      d="M23.6 12.25c0-.81-.07-1.58-.2-2.32H12v4.39h6.53c-.28 1.5-1.12 2.77-2.39 3.63v3h3.86c2.25-2.08 3.5-5.14 3.5-8.7z"
-                    />
-                    <path
-                      fill="#34A853"
-                      d="M12 24c3.24 0 5.96-1.07 7.95-2.91l-3.86-3c-1.07.72-2.45 1.15-4.09 1.15-3.15 0-5.82-2.13-6.77-5H1.26v3.15C3.25 21.09 7.27 24 12 24z"
-                    />
-                    <path
-                      fill="#FBBC05"
-                      d="M5.23 14.24a7.99 7.99 0 010-4.48V6.61H1.26A12 12 0 000 12c0 1.94.46 3.78 1.26 5.39l3.97-3.15z"
-                    />
-                    <path
-                      fill="#EA4335"
-                      d="M12 4.75a7.27 7.27 0 015.1 1.99l3.77-3.77C18.8 1 15.52 0 12 0 7.27 0 3.25 2.91 1.26 7.61l3.97 3.15c.95-2.87 3.62-5 6.77-5z"
-                    />
-                  </svg>
-                    Continue with Google
-                </button>
-              </a>
+              <button type="button" class="social-btn w-100">
+                <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+                  <path fill="#4285F4" d="M23.6 12.25c0-.81-.07-1.58-.2-2.32H12v4.39h6.53c-.28 1.5-1.12 2.77-2.39 3.63v3h3.86c2.25-2.08 3.5-5.14 3.5-8.7z" />
+                  <path fill="#34A853" d="M12 24c3.24 0 5.96-1.07 7.95-2.91l-3.86-3c-1.07.72-2.45 1.15-4.09 1.15-3.15 0-5.82-2.13-6.77-5H1.26v3.15C3.25 21.09 7.27 24 12 24z" />
+                  <path fill="#FBBC05" d="M5.23 14.24a7.99 7.99 0 010-4.48V6.61H1.26A12 12 0 000 12c0 1.94.46 3.78 1.26 5.39l3.97-3.15z" />
+                  <path fill="#EA4335" d="M12 4.75a7.27 7.27 0 015.1 1.99l3.77-3.77C18.8 1 15.52 0 12 0 7.27 0 3.25 2.91 1.26 7.61l3.97 3.15c.95-2.87 3.62-5 6.77-5z" />
+                </svg>
+                <a href="{% provider_login_url 'google' %}">
+                  Continue with Google
+                </a>
+              </button>
             </div>
           </div>
 
           <div class="text-center mt-4">
             <span class="text-muted-soft">Don't have an account? </span>
-            <a class="fw-semibold text-teal-600" href="{% url 'register' %}"
-              >Sign up</a
-            >
+            <a class="fw-semibold text-teal-600" href="{% url 'register' %}">Sign up</a>
           </div>
         </div>
       </div>
