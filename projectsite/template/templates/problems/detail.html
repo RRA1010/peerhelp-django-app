@@ -48,8 +48,13 @@
           return;
         }
 
+        const apiKey = '{{ google_maps_api_key|default_if_none:""|escapejs }}';
+        if (!apiKey) {
+          console.warn('Google Maps API key missing. Skipping meeting map rendering.');
+          return;
+        }
         const script = document.createElement('script');
-        script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyAyBbrrNGJe6LTWk4rZ0KuaS0TWSplA1T8&libraries=geometry';
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=geometry`;
         script.async = true;
         script.defer = true;
         script.dataset.googleMaps = 'true';

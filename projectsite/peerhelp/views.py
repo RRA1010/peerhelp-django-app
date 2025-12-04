@@ -6,6 +6,7 @@ from sqlite3 import paramstyle
 import requests
 from typing import Dict, List, Tuple
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -109,6 +110,7 @@ def base_context(request: HttpRequest, *, current_page: str = '') -> Dict[str, o
 		'user_avatar': profile.avatar.url if profile and profile.avatar else '',
 		'user_initials': initials_from_name(name) if profile else 'GU',
 		'user_email': profile.user.email if profile else '',
+		'google_maps_api_key': getattr(settings, 'GOOGLE_MAPS_API_KEY', ''),
 	}
 
 

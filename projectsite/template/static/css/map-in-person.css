@@ -1,0 +1,84 @@
+.map-stage {
+  min-height: 480px;
+}
+
+.map-info-window {
+  font-family: inherit;
+  max-width: 260px;
+  padding: 0.75rem;
+  border-radius: 1rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  background: #fffaf7;
+  color: #5f3c2e;
+  line-height: 1.4;
+}
+
+.map-info-title-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.map-info-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2f1b14;
+}
+
+.map-info-time {
+  font-size: 0.8rem;
+  color: #ba6b45;
+  white-space: nowrap;
+}
+
+.map-info-meta {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  font-size: 0.8rem;
+  margin-bottom: 0.35rem;
+}
+
+.map-info-location {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: #8c654f;
+  margin-bottom: 0.35rem;
+}
+
+.map-info-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-bottom: 0.35rem;
+}
+
+.map-info-tag,
+.map-info-subject,
+.map-info-urgency {
+  background: rgba(255, 107, 0, 0.12);
+  color: #d04f16;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+}
+
+.map-info-urgency {
+  text-transform: capitalize;
+}
+
+.map-info-owner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  margin-top: 0.4rem;
+}
+
+.map-info-owner .avatar-pill {
+  flex-shrink: 0;
+}

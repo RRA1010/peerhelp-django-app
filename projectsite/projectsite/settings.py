@@ -21,6 +21,8 @@ MESSAGE_TAGS = {
     messages.ERROR: 'danger',
     }
 
+GOOGLE_MAPS_API_KEY = os.getenv('GOOGLE_MAPS_API_KEY', 'AIzaSyAyBbrrNGJe6LTWk4rZ0KuaS0TWSplA1T8')
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 ASSET_ROOTS = [
