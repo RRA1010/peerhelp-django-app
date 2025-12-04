@@ -10,21 +10,6 @@
   <div class="badge-soft teal text-capitalize">Current Status: {{ id_status|default:"pending" }}</div>
 </section>
 
-{% if id_status == "verified" %}
-<section class="mentora-card mb-4">
-  <div class="card-body p-4 p-lg-5 text-center">
-    <div class="mb-4">
-      <i data-lucide="badge-check" class="text-teal-600" style="width: 64px; height: 64px;"></i>
-    </div>
-    <h2 class="h3 text-gray-900 mb-3">Congratulations!</h2>
-    <p class="text-muted-soft mb-4">Your identity has been verified. You can now help other students by accepting and solving problems.</p>
-    <a class="btn btn-orange d-inline-flex align-items-center gap-2" href="{% url 'dashboard' %}">
-      <i data-lucide="home"></i>
-      Back to Dashboard
-    </a>
-  </div>
-</section>
-{% else %}
 <section class="mentora-card mb-4">
   <div class="card-body p-4 p-lg-5">
     <form method="post" enctype="multipart/form-data" class="d-flex flex-column gap-4">
@@ -67,5 +52,4 @@
     </div>
   </div>
 </section>
-{% endif %}
 {% endblock %}

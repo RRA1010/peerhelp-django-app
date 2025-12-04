@@ -47,6 +47,15 @@ class ProblemForm(forms.ModelForm):
         label='Category',
         widget=forms.Select(attrs={'class': 'form-select select-pill text-capitalize'}),
     )
+    in_person_mode = forms.BooleanField(
+        required=False,
+        label='In-Person Mode',
+        widget=forms.CheckboxInput(attrs={
+            'class': 'd-none',
+            'data-in-person-flag': 'true',
+            'aria-hidden': 'true',
+        }),
+    )
 
     class Meta:
         model = Problem
@@ -56,6 +65,7 @@ class ProblemForm(forms.ModelForm):
             'description',
             'tags',
             'mode',
+            'in_person_mode',
             'urgency',
             'location_label',
         )
@@ -63,7 +73,7 @@ class ProblemForm(forms.ModelForm):
             'title': forms.TextInput(attrs={'class': 'form-control input-control', 'placeholder': 'Need help with dynamic programming'}),
             'description': forms.Textarea(attrs={'rows': 5, 'class': 'form-control input-control', 'placeholder': 'Describe what you tried so far...'}),
             'tags': forms.TextInput(attrs={'class': 'form-control input-control', 'placeholder': 'python, debugging'}),
-            'mode': forms.Select(attrs={'class': 'form-select select-pill text-capitalize'}),
+            'mode': forms.Select(attrs={'class': 'form-select select-pill text-capitalize', 'data-mode-select': 'true'}),
             'urgency': forms.Select(attrs={'class': 'form-select select-pill text-capitalize'}),
             'location_label': forms.TextInput(attrs={'class': 'form-control input-control', 'placeholder': 'Library study room / Zoom link'}),
         }
@@ -80,7 +90,7 @@ class SolutionForm(forms.ModelForm):
         model = Solution
         fields = ('content',)
         widgets = {
-            'content': forms.Textarea(attrs={'rows': 6, 'class': 'form-control solution-input', 'id': 'solutionInput', 'placeholder': 'Write your detailed solution here...'}),
+            'content': forms.Textarea(attrs={'rows': 6, 'class': 'form-control solution-input', 'id': 'solutionInput', 'placeholder': 'Write the summary of what happened here...'}),
         }
 
 

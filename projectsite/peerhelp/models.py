@@ -76,6 +76,9 @@ class Problem(models.Model):
     description = models.TextField()
     tags = models.CharField(max_length=200, blank=True)
     mode = models.CharField(max_length=20, choices=SESSION_MODE_CHOICES, default='online')
+    in_person_mode = models.BooleanField(default=False)
+    meeting_lat = models.FloatField(null=True, blank=True)
+    meeting_lng = models.FloatField(null=True, blank=True)
     urgency = models.CharField(max_length=20, choices=URGENCY_CHOICES, default='medium')
     credits_offered = models.PositiveIntegerField(default=10)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_OPEN)
@@ -89,6 +92,10 @@ class Problem(models.Model):
         blank=True,
         related_name='accepted_problems',
     )
+    solver_meeting_note = models.TextField(blank=True)
+    solver_meeting_note_at = models.DateTimeField(blank=True, null=True)
+    owner_meeting_reply = models.TextField(blank=True)
+    owner_meeting_reply_at = models.DateTimeField(blank=True, null=True)
 
     def __str__(self) -> str:
         return self.title
@@ -124,15 +131,6 @@ class SolutionAttachment(models.Model):
 
     def __str__(self) -> str:
         return f"Attachment for {self.solution}"
-
-
-class AISummary(models.Model):
-    problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='ai_summaries')
-    summary_text = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self) -> str:
-        return f"Summary for {self.problem}"
 
 
 class Review(models.Model):

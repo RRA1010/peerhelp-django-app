@@ -16,8 +16,8 @@ Including another URLconf
 """
 from django.urls import path, include
 from django.contrib import admin
-from django.conf import settings
-from django.conf.urls.static import static
+
+
 from peerhelp import views
 
 urlpatterns = [
@@ -35,13 +35,14 @@ urlpatterns = [
     path('problems/<slug:slug>/', views.problem_detail_view, name='problem-detail'),
     path('problems/<slug:slug>/accept/', views.problem_accept_view, name='problem-accept'),
     path('problems/<slug:slug>/release/', views.problem_release_view, name='problem-release'),
+    path('problems/<slug:slug>/meeting-reply/', views.problem_meeting_reply_view, name='problem-meeting-reply'),
     path('problems/<slug:slug>/edit/', views.problem_edit_view, name='problem-edit'),
     path('problems/<slug:slug>/delete/', views.problem_delete_view, name='problem-delete'),
     path('problems/<slug:slug>/submit-solution/', views.solution_submit_view, name='submit-solution'),
+    path('problems/<int:problem_id>/pick-location/', views.pick_location, name='pick_location'),
     path('solutions/<int:pk>/accept/', views.solution_accept_view, name='solution-accept'),
     path('solutions/<int:pk>/edit/', views.solution_edit_view, name='solution-edit'),
     path('solutions/<int:pk>/delete/', views.solution_delete_view, name='solution-delete'),
-    path('ai/tools/', views.ai_tools_view, name='ai-tools'),
     path('profile/', views.profile_view, name='user-profile'),
     path('reviews/', views.reviews_view, name='ratings'),
     path('map/', views.map_view, name='map-view'),
@@ -50,5 +51,3 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 ]
 
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
