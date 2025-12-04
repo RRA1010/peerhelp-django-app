@@ -58,7 +58,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.google',
 ]
 
-SITE_ID = 4
+SITE_ID = 5
 
 #for OAuth
 AUTHENTICATION_BACKENDS = [
