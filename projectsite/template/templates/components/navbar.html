@@ -36,11 +36,21 @@
                 <span>{{ user_initials|default:"JD" }}</span>
               {% endif %}
             </span>
-            <span class="d-none d-sm-inline small text-gray-700">{{ user_name|default:"John Doe" }}</span>
+            <span class="d-none d-sm-inline small text-gray-700 d-flex align-items-center gap-1">
+              <span>{{ user_name|default:"John Doe" }}</span>
+              {% if user_is_verified %}
+                <i data-lucide="badge-check" class="text-emerald-600" style="width: 16px; height: 16px;" title="Verified user"></i>
+              {% endif %}
+            </span>
           </button>
           <div class="dropdown-menu dropdown-menu-end glass-panel p-0 overflow-hidden">
             <div class="px-3 py-3 border-bottom">
-              <div class="fw-semibold text-gray-900">{{ user_name|default:"John Doe" }}</div>
+              <div class="fw-semibold text-gray-900 d-flex align-items-center gap-1">
+                <span>{{ user_name|default:"John Doe" }}</span>
+                {% if user_is_verified %}
+                  <i data-lucide="badge-check" class="text-emerald-600" style="width: 16px; height: 16px;" title="Verified user"></i>
+                {% endif %}
+              </div>
               <div class="small text-muted-soft">{{ user_email|default:"john@university.edu" }}</div>
             </div>
             <a class="dropdown-item d-flex align-items-center gap-2" href="{% url 'user-profile' %}">

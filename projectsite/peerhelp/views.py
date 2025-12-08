@@ -76,6 +76,7 @@ def avatar_payload(profile: UserProfile, *, include_rating: bool = False) -> Dic
 		'name': name,
 		'avatar': profile.avatar.url if profile.avatar else '',
 		'initials': initials_from_name(name),
+		'is_verified': profile.id_status == UserProfile.ID_STATUS_VERIFIED,
 	}
 	if include_rating:
 		data['rating'] = profile.rating
@@ -118,7 +119,7 @@ def render_page(request: HttpRequest, template: str, *, current_page: str = '', 
 	return render(
 		request,
 		template,
-		{**base_context(request, current_page=current_page), **extra},
+		{**base_context(request, current_page=current_page), 'user_is_verified': ensure_profile(request.user).id_status == UserProfile.ID_STATUS_VERIFIED if request.user.is_authenticated else False, **extra},
 	)
 
 
@@ -709,7 +710,24 @@ def profile_view(request: HttpRequest) -> HttpResponse:
 	]
 	profile_badges = [{'name': badge.badge.name, 'icon': '⚡', 'variant': 'teal', 'earned': True} for badge in request.user.badges.select_related('badge')]
 
-	return render_page(request, 'profile/index.html', current_page='user-profile', profile={'name': display_name(profile.user), 'avatar': profile.avatar.url if profile.avatar else '', 'initials': initials_from_name(profile.user.username), 'major': profile.skills or 'Generalist', 'university': profile.location_text or 'Campus', 'joined': profile.user.date_joined.strftime('%B %Y'), 'bio': profile.bio, 'badge_summary': f"{len(profile_badges)} unlocked"}, profile_stats=profile_stats, profile_badges=profile_badges)
+	return render_page(
+		request,
+		'profile/index.html',
+		current_page='user-profile',
+		profile={
+			'name': display_name(profile.user),
+			'avatar': profile.avatar.url if profile.avatar else '',
+			'initials': initials_from_name(profile.user.username),
+			'major': profile.skills or 'Generalist',
+			'university': profile.location_text or 'Campus',
+			'joined': profile.user.date_joined.strftime('%B %Y'),
+			'bio': profile.bio,
+			'badge_summary': f"{len(profile_badges)} unlocked",
+			'is_verified': profile.id_status == UserProfile.ID_STATUS_VERIFIED,
+		},
+		profile_stats=profile_stats,
+		profile_badges=profile_badges,
+	)
 
 
 @login_required
@@ -751,14 +769,58 @@ def map_view(request: HttpRequest) -> HttpResponse:
 def verify_id_view(request: HttpRequest) -> HttpResponse:
 	profile = ensure_profile(request.user)
 	form = IDVerificationForm(instance=profile)
+	if request.method == 'POST' and profile.id_status == UserProfile.ID_STATUS_VERIFIED:
+		return flash_redirect(request, 'info', 'Your ID is already verified.', 'verification')
+
 	if request.method == 'POST':
 		form = IDVerificationForm(request.POST, request.FILES, instance=profile)
 		if form.is_valid():
-			form.save(); profile.id_status = UserProfile.ID_STATUS_PENDING
+			form.save()
+
+			api_key = os.getenv("OCRSPACE_API_KEY")
+			uploaded_file = request.FILES.get('id_document')
+
+			status_to_set = UserProfile.ID_STATUS_PENDING
+			message_level = 'success'
+			message_text = 'ID uploaded successfully. Status set to pending verification.'
+
+			if uploaded_file and api_key:
+				try:
+					uploaded_file.seek(0)
+					response = requests.post(
+						'https://api.ocr.space/parse/image',
+						files={'file': (uploaded_file.name, uploaded_file.read(), uploaded_file.content_type)},
+						data={'apikey': api_key},
+						timeout=30,
+					)
+					response.raise_for_status()
+					result = response.json()
+
+					extracted_text = ""
+					if result.get("ParsedResults"):
+						extracted_text = result["ParsedResults"][0].get("ParsedText", "")
+
+					user_name = display_name(request.user)
+					name_parts = user_name.lower().split()
+					lowered_text = extracted_text.lower()
+
+					has_psu = "palawan state" in lowered_text or "psu" in lowered_text
+					has_name = any(part in lowered_text for part in name_parts if len(part) >= 2)
+
+					if has_psu and has_name:
+						status_to_set = UserProfile.ID_STATUS_VERIFIED
+						message_text = 'ID verified successfully.'
+					else:
+						status_to_set = UserProfile.ID_STATUS_REJECTED
+						message_level = 'error'
+						message_text = 'ID verification failed.'
+				except requests.exceptions.RequestException:
+					status_to_set = UserProfile.ID_STATUS_PENDING
+					message_level = 'warning'
+					message_text = 'ID uploaded but verification service is currently not available. Status set to pending for manual review.'
+			profile.id_status = status_to_set
 			profile.save(update_fields=['id_status'])
-			return flash_redirect(request, 'success', 'ID uploaded successfully. Status set to pending verification.', 'verification')
+			return flash_redirect(request, message_level, message_text, 'verification')
 		messages.error(request, 'Unable to upload ID. Please try again.')
 
 	return render_page(request, 'profile/verification.html', current_page='verification', id_form=form, id_status=profile.id_status)
-
-

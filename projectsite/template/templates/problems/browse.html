@@ -71,7 +71,12 @@
         <div class="row g-4">
           <div class="col-auto">
             {% include "components/avatar.html" with src=problem.author.avatar initials=problem.author.initials|default:problem.author.name|first user_initials=problem.author.initials|default:problem.author.name|first %}
-            <div class="mt-2 text-sm text-gray-700 fw-semibold">{{ problem.author.name }}</div>
+            <div class="mt-2 text-sm text-gray-700 fw-semibold d-flex align-items-center gap-1">
+              <span>{{ problem.author.name }}</span>
+              {% if problem.author.is_verified %}
+                <i data-lucide="badge-check" class="text-emerald-600" style="width:16px;height:16px;" title="Verified user"></i>
+              {% endif %}
+            </div>
             <div class="small text-muted-soft d-flex align-items-center gap-1">
               <i data-lucide="clock" class="text-amber-600" style="width:14px;height:14px;"></i>
               Joined {{ problem.time }}

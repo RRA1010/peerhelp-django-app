@@ -46,21 +46,21 @@ ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'peerhelp.pythonanywhere.com']
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
+	'django.contrib.admin',
+	'django.contrib.auth',
+	'django.contrib.contenttypes',
+	'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'peerhelp',
     'django.contrib.sites',
     'allauth',
     'allauth.account',
-    'allauth.socialaccount',
-    'allauth.socialaccount.providers.google',
+	'allauth.socialaccount',
+	'allauth.socialaccount.providers.google',
 ]
 
-SITE_ID = 5
+SITE_ID = int(os.getenv("DJANGO_SITE_ID", 1))
 
 #for OAuth
 AUTHENTICATION_BACKENDS = [
