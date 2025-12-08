@@ -77,7 +77,12 @@
     <div class="row g-4 align-items-start">
       <div class="col-md-auto text-center text-md-start">
         {% include "components/avatar.html" with src=problem.author.avatar initials=problem.author.initials|default:problem.author.name|first extra_classes="hero-avatar" %}
-        <div class="mt-3 text-gray-900 fw-semibold">{{ problem.author.name }}</div>
+        <div class="mt-3 text-gray-900 fw-semibold">
+          {{ problem.author.name }}
+          {% if problem.author.is_verified %}
+            <i data-lucide="badge-check" class="text-emerald-600" title="Verified user"></i>
+          {% endif %}
+        </div>
         <div class="small text-muted-soft d-flex align-items-center justify-content-center justify-content-md-start gap-1">
           <i data-lucide="users" class="text-emerald-600" style="width:14px;height:14px;"></i>
           {{ problem.author.solved }} students helped
