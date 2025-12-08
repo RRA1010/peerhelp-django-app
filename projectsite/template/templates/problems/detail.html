@@ -1,11 +1,73 @@
 {% extends "base.html" %}
+{% block extra_css %}
+  {{ block.super }}
+  {% if problem.meeting_lat and problem.meeting_lng %}
+    <style>
+      #problemLocationMap {
+        height: 260px;
+        border-radius: 16px;
+      }
+    </style>
+  {% endif %}
+{% endblock %}
+{% block extra_js %}
+  {{ block.super }}
+  {% if problem.meeting_lat and problem.meeting_lng %}
+    <script>
+      (function initProblemLocationMap() {
+        const renderMap = () => {
+          const mapEl = document.getElementById('problemLocationMap');
+          if (!mapEl) {
+            return;
+          }
+          const lat = parseFloat(mapEl.dataset.lat);
+          const lng = parseFloat(mapEl.dataset.lng);
+          if (Number.isNaN(lat) || Number.isNaN(lng)) {
+            return;
+          }
+          const center = { lat, lng };
+          const map = new google.maps.Map(mapEl, {
+            center,
+            zoom: 18,
+            mapTypeId: 'roadmap',
+            streetViewControl: false,
+            fullscreenControl: false,
+            mapTypeControl: false,
+          });
+          new google.maps.Marker({ position: center, map, title: 'Meeting point' });
+        };
+
+        if (window.google && window.google.maps) {
+          renderMap();
+          return;
+        }
+
+        const existingScript = document.querySelector('script[data-google-maps]');
+        if (existingScript) {
+          existingScript.addEventListener('load', renderMap, { once: true });
+          return;
+        }
+
+        const apiKey = '{{ google_maps_api_key|default_if_none:""|escapejs }}';
+        if (!apiKey) {
+          console.warn('Google Maps API key missing. Skipping meeting map rendering.');
+          return;
+        }
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=geometry`;
+        script.async = true;
+        script.defer = true;
+        script.dataset.googleMaps = 'true';
+        script.addEventListener('load', renderMap, { once: true });
+        document.head.appendChild(script);
+      })();
+    </script>
+  {% endif %}
+{% endblock %}
 {% block title %}{{ problem.title }} | PeerHelp{% endblock %}
 {% block body_class %}problem-detail-page{% endblock %}
 {% block content %}
-<a
-  class="btn btn-orange-link mb-4 d-inline-flex align-items-center gap-2"
-  href="{% url 'browse-problems' %}"
->
+<a class="btn btn-orange-link mb-4 d-inline-flex align-items-center gap-2" href="{% url 'browse-problems' %}">
   <i data-lucide="arrow-left"></i>
   Back to Problems
 </a>
@@ -15,25 +77,12 @@
     <div class="row g-4 align-items-start">
       <div class="col-md-auto text-center text-md-start">
         {% include "components/avatar.html" with src=problem.author.avatar initials=problem.author.initials|default:problem.author.name|first extra_classes="hero-avatar" %}
-        <div class="mt-3 text-gray-900 fw-semibold">
-          {{ problem.author.name }}{% if problem.author.is_verified %} <i data-lucide="badge-check" class="text-emerald-600" title="Verified User"></i>{% endif %}
+        <div class="mt-3 text-gray-900 fw-semibold">{{ problem.author.name }}</div>
+        <div class="small text-muted-soft d-flex align-items-center justify-content-center justify-content-md-start gap-1">
+          <i data-lucide="users" class="text-emerald-600" style="width:14px;height:14px;"></i>
+          {{ problem.author.solved }} students helped
         </div>
-        <div
-          class="small text-muted-soft d-flex align-items-center justify-content-center justify-content-md-start gap-1"
-        >
-          <i
-            data-lucide="award"
-            class="text-amber-600"
-            style="width: 14px; height: 14px"
-          ></i>
-          {{ problem.author.credits }} credits
-        </div>
-        <div class="small text-muted-soft">
-          {{ problem.author.solved }} problems solved
-        </div>
-        <div class="small text-muted-soft">
-          ⭐ {{ problem.author.rating }} rating
-        </div>
+        <div class="small text-muted-soft">⭐ {{ problem.author.rating }} rating</div>
       </div>
       <div class="col">
         <div class="d-flex flex-column flex-lg-row gap-4 align-items-lg-start">
@@ -41,17 +90,14 @@
             <div class="d-flex flex-wrap align-items-start gap-3 mb-3">
               <div class="flex-grow-1">
                 <h1 class="h3 text-gray-900 mb-2">{{ problem.title }}</h1>
-                <div
-                  class="problem-meta text-muted-soft small d-flex flex-wrap align-items-center gap-3"
-                >
-                  <span
-                    class="d-inline-flex align-items-center gap-2 text-capitalize"
-                  >
+                <div class="problem-meta text-muted-soft small d-flex flex-wrap align-items-center gap-3">
+                  <span class="d-inline-flex align-items-center gap-2 text-capitalize">
                     {% if problem.mode == 'in_person' %}
-                    <i data-lucide="map-pin"></i>
+                      <i data-lucide="map-pin"></i>
                     {% else %}
-                    <i data-lucide="monitor"></i>
-                    {% endif %} {{ problem.mode_label }}
+                      <i data-lucide="monitor"></i>
+                    {% endif %}
+                    {{ problem.mode_label }}
                   </span>
                   <span class="d-inline-flex align-items-center gap-2">
                     <i data-lucide="clock"></i>
@@ -63,50 +109,31 @@
                   </span>
                 </div>
               </div>
-              <span
-                class="badge-soft urgency-badge urgency-{{ problem.urgency }}"
-                >{{ problem.urgency }}</span
-              >
+              <span class="badge-soft urgency-badge urgency-{{ problem.urgency }}">{{ problem.urgency }}</span>
             </div>
             <div class="d-flex flex-wrap gap-2 mb-3">
               {% for tag in problem.tags %}
-              <span class="tag-pill">{{ tag }}</span>
+                <span class="tag-pill">{{ tag }}</span>
               {% endfor %}
-            </div>
-            <div class="credit-pill">
-              <i data-lucide="award"></i>
-              {{ problem.credits }} credits offered
             </div>
           </div>
           {% if is_owner %}
-          <div class="owner-action-stack w-100 w-lg-auto ms-lg-auto">
-            <div class="text-muted-soft small text-uppercase fw-semibold mb-2">
-              Manage Problem
+            <div class="owner-action-stack w-100 w-lg-auto ms-lg-auto">
+              <div class="text-muted-soft small text-uppercase fw-semibold mb-2">Manage Problem</div>
+              <div class="d-flex flex-wrap flex-lg-column gap-2">
+                <a class="btn btn-orange-outline d-inline-flex align-items-center gap-2 justify-content-center" href="{{ problem_edit_url }}">
+                  <i data-lucide="pencil"></i>
+                  Update
+                </a>
+                <form method="post" action="{{ problem_delete_url }}" data-confirm="Delete this problem permanently?">
+                  {% csrf_token %}
+                  <button class="btn btn-orange d-inline-flex align-items-center gap-2 justify-content-center w-100" type="submit">
+                    <i data-lucide="trash-2"></i>
+                    Delete
+                  </button>
+                </form>
+              </div>
             </div>
-            <div class="d-flex flex-wrap flex-lg-column gap-2">
-              <a
-                class="btn btn-orange-outline d-inline-flex align-items-center gap-2 justify-content-center"
-                href="{{ problem_edit_url }}"
-              >
-                <i data-lucide="pencil"></i>
-                Update
-              </a>
-              <form
-                method="post"
-                action="{{ problem_delete_url }}"
-                data-confirm="Delete this problem permanently?"
-              >
-                {% csrf_token %}
-                <button
-                  class="btn btn-orange d-inline-flex align-items-center gap-2 justify-content-center w-100"
-                  type="submit"
-                >
-                  <i data-lucide="trash-2"></i>
-                  Delete
-                </button>
-              </form>
-            </div>
-          </div>
           {% endif %}
         </div>
       </div>
@@ -123,6 +150,22 @@
   </div>
 </section>
 
+{% if problem.meeting_lat and problem.meeting_lng %}
+<section class="mentora-card mb-4">
+  <div class="card-header bg-transparent border-0 pb-0 px-4 pt-4 d-flex justify-content-between align-items-center">
+    <h2 class="h5 text-gray-900 mb-0">In-Person Meeting Spot</h2>
+    <span class="badge-soft teal d-inline-flex align-items-center gap-1">
+      <i data-lucide="map-pin"></i>
+      On Campus
+    </span>
+  </div>
+  <div class="card-body p-4">
+    <div id="problemLocationMap" data-lat="{{ problem.meeting_lat }}" data-lng="{{ problem.meeting_lng }}"></div>
+    <p class="text-muted-soft small mt-3 mb-0">Coordinates: {{ problem.meeting_lat }}, {{ problem.meeting_lng }}. Meet anywhere within the highlighted PSU campus boundary.</p>
+  </div>
+</section>
+{% endif %}
+
 {% if problem.attachments %}
 <section class="mentora-card mb-4">
   <div class="card-header bg-transparent border-0 pb-0">
@@ -131,119 +174,153 @@
   <div class="card-body">
     <div class="attachment-grid">
       {% for attachment in problem.attachments %}
-      <div class="attachment-tile">
-        <div class="attachment-icon">
-          <i data-lucide="file-text"></i>
-        </div>
-        <div class="flex-grow-1">
-          <div class="fw-semibold text-gray-900 text-truncate">
-            {{ attachment.name }}
+        <div class="attachment-tile">
+          <div class="attachment-icon">
+            <i data-lucide="file-text"></i>
           </div>
-          <div class="text-uppercase small text-muted-soft">
-            {{ attachment.type }}
+          <div class="flex-grow-1">
+            <div class="fw-semibold text-gray-900 text-truncate">{{ attachment.name }}</div>
+            <div class="text-uppercase small text-muted-soft">{{ attachment.type }}</div>
           </div>
         </div>
-      </div>
       {% endfor %}
     </div>
   </div>
 </section>
-{% endif %} {% if is_owner %}
+{% endif %}
+
+{% if is_owner %}
 <section class="mentora-card mb-4 owner-review-card">
-  <div
-    class="card-header bg-transparent border-0 pb-0 px-4 pt-4 d-flex justify-content-between align-items-center"
-  >
+  <div class="card-header bg-transparent border-0 pb-0 px-4 pt-4 d-flex justify-content-between align-items-center">
     <h2 class="h5 text-gray-900 mb-0">Owner Review Panel</h2>
     {% if owner_solver_details %}
-    <span class="badge-soft teal">{{ problem.status_label }}</span>
+      <span class="badge-soft teal">{{ problem.status_label }}</span>
     {% endif %}
   </div>
   <div class="card-body p-4">
     {% if owner_solver_details %}
-    <div class="d-flex align-items-center gap-3 mb-3">
-      {% include "components/avatar.html" with src=owner_solver_details.avatar initials=owner_solver_details.initials extra_classes="solver-avatar" %}
-      <div>
-        <p class="text-muted-soft small mb-1">Accepted by</p>
-        <div class="h6 text-gray-900 mb-0">{{ owner_solver_details.name }}</div>
-        <div class="small text-muted-soft d-flex gap-3 flex-wrap">
-          <span class="d-inline-flex align-items-center gap-1">
-            <i data-lucide="award"></i>
-            {{ owner_solver_details.credits }} credits
-          </span>
-          <span>⭐ {{ owner_solver_details.rating }}</span>
-        </div>
-      </div>
-    </div>
-    {% else %}
-    <p class="text-muted-soft">
-      No solver has formally accepted this problem yet, but you can still review
-      incoming solutions below.
-    </p>
-    {% endif %} {% if owner_solver_solution %}
-    <div class="owner-solution-preview mb-3">
-      <div class="fw-semibold text-gray-900 mb-2">Submitted Solution</div>
-      <div class="text-muted-soft whitespace-pre-line">
-        {{ owner_solver_solution.content }}
-      </div>
-    </div>
-    {% if owner_solver_solution.is_accepted %}
-    <div class="alert alert-success d-flex flex-column gap-2">
-      <div class="d-flex align-items-center gap-2">
-        <i data-lucide="check-circle"></i>
-        Solution accepted and marked as solved.
-      </div>
-      {% if owner_solver_review %}
-      <div>
-        <div class="small text-muted-soft">Your review</div>
-        <div class="fw-semibold text-gray-900">
-          Rating: {{ owner_solver_review.rating }} ★
-        </div>
-        <p class="mb-0 text-muted-soft">{{ owner_solver_review.comment }}</p>
-      </div>
-      {% endif %}
-    </div>
-    {% elif owner_review_form %}
-    <div class="border rounded-3 p-3">
-      <h3 class="h6 text-gray-900 mb-3">Accept &amp; Review Solution</h3>
-      <form
-        method="post"
-        action="{% url 'solution-accept' owner_solver_solution.id %}"
-      >
-        {% csrf_token %}
-        <div class="mb-3">
-          <label class="form-label">Rating</label>
-          {{ owner_review_form.rating }}
-          <div class="rating-stars-input" data-rating-control>
-            {% for _ in '12345'|make_list %}
-            <button
-              type="button"
-              class="rating-star"
-              data-rating-star="{{ forloop.counter }}"
-            >
-              <i data-lucide="star"></i>
-            </button>
-            {% endfor %}
+      <div class="d-flex align-items-center gap-3 mb-3">
+        {% include "components/avatar.html" with src=owner_solver_details.avatar initials=owner_solver_details.initials|default:owner_solver_details.name|first extra_classes="solver-avatar" %}
+        <div>
+          <p class="text-muted-soft small mb-1">Accepted by</p>
+          <div class="h6 text-gray-900 mb-0">{{ owner_solver_details.name }}</div>
+          <div class="small text-muted-soft d-flex gap-3 flex-wrap">
+            <span class="d-inline-flex align-items-center gap-1">
+              <i data-lucide="users"></i>
+              Active solver
+            </span>
+            <span>⭐ {{ owner_solver_details.rating }}</span>
           </div>
         </div>
-        <div class="mb-3">
-          <label class="form-label">Review</label>
-          {{ owner_review_form.comment }}
-        </div>
-        <button class="btn btn-orange" type="submit">Accept Solution</button>
-      </form>
-    </div>
-    {% elif owner_solution_matches_solver %}
-    <div class="alert alert-info">Awaiting your decision on this solution.</div>
+      </div>
     {% else %}
-    <div class="alert alert-warning">
-      {{ owner_solution_author_name }} submitted this solution but has not
-      currently locked the problem. Ask them to accept the problem before you
-      can mark it solved.
+      <p class="text-muted-soft">No solver has formally accepted this problem yet, but you can still review incoming solutions below.</p>
+    {% endif %}
+
+    {% if owner_solver_solution %}
+      <div class="owner-solution-preview mb-3">
+        <div class="fw-semibold text-gray-900 mb-2">Submitted Solution</div>
+        <div class="text-muted-soft whitespace-pre-line">{{ owner_solver_solution.content }}</div>
+      </div>
+      {% if owner_solver_solution.is_accepted %}
+        <div class="alert alert-success d-flex flex-column gap-2">
+          <div class="d-flex align-items-center gap-2">
+            <i data-lucide="check-circle"></i>
+            Solution accepted and marked as solved.
+          </div>
+          {% if owner_solver_review %}
+            <div>
+              <div class="small text-muted-soft">Your review</div>
+              <div class="fw-semibold text-gray-900">Rating: {{ owner_solver_review.rating }} ★</div>
+              <p class="mb-0 text-muted-soft">{{ owner_solver_review.comment }}</p>
+            </div>
+          {% endif %}
+        </div>
+      {% elif owner_review_form %}
+        <div class="border rounded-3 p-3">
+          <h3 class="h6 text-gray-900 mb-3">Accept &amp; Review Solution</h3>
+          <form method="post" action="{% url 'solution-accept' owner_solver_solution.id %}">
+            {% csrf_token %}
+            <div class="mb-3">
+              <label class="form-label">Rating</label>
+              {{ owner_review_form.rating }}
+              <div class="rating-stars-input" data-rating-control>
+                {% for _ in '12345'|make_list %}
+                  <button type="button" class="rating-star" data-rating-star="{{ forloop.counter }}">
+                    <i data-lucide="star"></i>
+                  </button>
+                {% endfor %}
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Review</label>
+              {{ owner_review_form.comment }}
+            </div>
+            <button class="btn btn-orange" type="submit">Accept Solution</button>
+          </form>
+        </div>
+      {% elif owner_solution_matches_solver %}
+        <div class="alert alert-info">Awaiting your decision on this solution.</div>
+      {% else %}
+        <div class="alert alert-warning">
+          {{ owner_solution_author_name }} submitted this solution but has not currently locked the problem. Ask them to accept the problem before you can mark it solved.
+        </div>
+      {% endif %}
+    {% else %}
+      <p class="text-muted-soft mb-0">No solutions have been submitted yet. Once they do, they will appear here.</p>
+    {% endif %}
+  </div>
+</section>
+{% endif %}
+
+{% if show_meeting_thread %}
+<section class="mentora-card mb-4 meeting-thread-card">
+  <div class="card-header bg-transparent border-0 pb-0 px-4 pt-4 d-flex justify-content-between align-items-center">
+    <h2 class="h5 text-gray-900 mb-0">Meeting Coordination</h2>
+    {% if problem.meeting_thread.pending_owner_reply %}
+      <span class="badge-soft amber d-inline-flex align-items-center gap-1">
+        <i data-lucide="clock"></i>
+        Awaiting Owner Reply
+      </span>
+    {% elif problem.meeting_thread.has_reply %}
+      <span class="badge-soft teal d-inline-flex align-items-center gap-1">
+        <i data-lucide="check-circle"></i>
+        Updated {{ problem.meeting_thread.reply_time }}
+      </span>
+    {% endif %}
+  </div>
+  <div class="card-body p-4">
+    <div class="border rounded-3 p-3 mb-3 bg-light">
+      <div class="small text-muted-soft text-uppercase fw-semibold">Solver Proposal</div>
+      {% if problem.meeting_thread.proposal_time %}
+        <div class="small text-muted-soft mb-2">{{ problem.meeting_thread.proposal_time }}</div>
+      {% endif %}
+      <p class="mb-0 text-gray-900 whitespace-pre-line">{{ problem.meeting_thread.proposal }}</p>
     </div>
-    {% endif %} {% else %}
-    <p class="text-muted-soft mb-0">
-      No solutions have been submitted yet. Once they do, they will appear here.
-    </p>
+    {% if problem.meeting_thread.has_reply %}
+      <div class="border rounded-3 p-3 bg-white shadow-sm">
+        <div class="small text-muted-soft text-uppercase fw-semibold">Owner Reply</div>
+        {% if problem.meeting_thread.reply_time %}
+          <div class="small text-muted-soft mb-2">{{ problem.meeting_thread.reply_time }}</div>
+        {% endif %}
+        <p class="mb-0 text-gray-900 whitespace-pre-line">{{ problem.meeting_thread.reply }}</p>
+      </div>
+    {% elif can_reply_meeting_thread %}
+      <form method="post" action="{% url 'problem-meeting-reply' problem.slug %}" class="meeting-reply-form">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label class="form-label">Reply to the solver</label>
+          <textarea class="form-control" name="owner_reply" rows="3" required placeholder="Share when and where you can meet."></textarea>
+        </div>
+        <button class="btn btn-orange d-inline-flex align-items-center gap-2" type="submit">
+          Send Reply
+          <i data-lucide="send"></i>
+        </button>
+      </form>
+    {% else %}
+      <div class="alert alert-info mb-0">
+        Awaiting a response from the owner.
+      </div>
     {% endif %}
   </div>
 </section>
@@ -252,183 +329,75 @@
 <section class="cta-card mb-5 text-center text-white">
   <div class="card-body p-4 p-lg-5">
     <h3 class="h4 mb-2">Ready to help?</h3>
-    <p class="mb-4 text-white-50">
-      Accept this problem and submit your solution to earn {{ problem.credits }}
-      credits.
-    </p>
+    <p class="mb-4 text-white-50">Accept this problem and submit your solution to support a fellow student.</p>
     {% if is_problem_solved %}
-    <div class="alert alert-success bg-opacity-25 border-0 text-white-75">
-      This problem has already been solved.
-    </div>
-    <span class="badge-soft teal text-uppercase"
-      >{{ problem.status_label }}</span
-    >
+      <div class="alert alert-success bg-opacity-25 border-0 text-white-75">
+        This problem has already been solved.
+      </div>
+      <span class="badge-soft teal text-uppercase">{{ problem.status_label }}</span>
     {% elif is_owner %}
-    <div class="alert alert-info bg-opacity-25 border-0 text-white-75">
-      You posted this problem, so it is waiting for peers to solve.
-    </div>
+      <div class="alert alert-info bg-opacity-25 border-0 text-white-75">
+        You posted this problem, so it is waiting for peers to solve.
+      </div>
     {% elif is_current_solver %}
-    <div class="d-flex flex-wrap justify-content-center gap-3">
-      <a
-        class="btn btn-orange d-inline-flex align-items-center gap-2"
-        href="{% url 'submit-solution' problem.slug %}"
-      >
-        Continue to Submit Solution
-        <i data-lucide="arrow-right"></i>
-      </a>
-      <form method="post" action="{% url 'problem-release' problem.slug %}">
-        {% csrf_token %}
-        <button
-          class="btn btn-orange-outline d-inline-flex align-items-center gap-2"
-          type="submit"
-        >
-          Release Problem
-          <i data-lucide="unlock"></i>
-        </button>
-      </form>
-    </div>
-    <p class="small text-white-50 mt-3 mb-0">
-      Releasing the problem makes it available to other solvers.
-    </p>
+      <div class="d-flex flex-wrap justify-content-center gap-3">
+        <a class="btn btn-orange d-inline-flex align-items-center gap-2" href="{% url 'submit-solution' problem.slug %}">
+          Continue to Submit Solution
+          <i data-lucide="arrow-right"></i>
+        </a>
+        <form method="post" action="{% url 'problem-release' problem.slug %}">
+          {% csrf_token %}
+          <button class="btn btn-orange-outline d-inline-flex align-items-center gap-2" type="submit">
+            Release Problem
+            <i data-lucide="unlock"></i>
+          </button>
+        </form>
+      </div>
+      <p class="small text-white-50 mt-3 mb-0">Releasing the problem makes it available to other solvers.</p>
     {% elif is_locked_by_other %}
-    <div class="alert alert-warning bg-opacity-25 border-0 text-white-75">
-      Another solver is currently working on this problem. Please check back
-      later.
-    </div>
-    <button
-      class="btn btn-orange-soft d-inline-flex align-items-center gap-2"
-      type="button"
-      disabled
-    >
-      Problem Locked
-      <i data-lucide="shield"></i>
-    </button>
-    {% elif can_accept_problem %} {% if is_user_verified %}
-    <form
-      method="post"
-      action="{% url 'problem-accept' problem.slug %}"
-      class="d-inline-flex"
-    >
-      {% csrf_token %}
-      <button
-        class="btn btn-orange d-inline-flex align-items-center gap-2"
-        type="submit"
-      >
-        Accept Problem & Submit Solution
-        <i data-lucide="arrow-right"></i>
+      <div class="alert alert-warning bg-opacity-25 border-0 text-white-75">
+        Another solver is currently working on this problem. Please check back later.
+      </div>
+      <button class="btn btn-orange-soft d-inline-flex align-items-center gap-2" type="button" disabled>
+        Problem Locked
+        <i data-lucide="shield"></i>
       </button>
+    {% elif can_accept_problem %}
+    <form method="post" action="{% url 'problem-accept' problem.slug %}" class="cta-accept-form w-100">
+    {% csrf_token %}
+    {% if problem.mode == 'in_person' %}
+      <div class="mb-3 text-start">
+      <label class="form-label text-white">Propose a meeting time</label>
+      <textarea class="form-control" name="meeting_note" rows="3" required placeholder="Add a time window, day, and any other helpful context for meeting."></textarea>
+      <div class="form-text text-white-50">Owners only see this after you lock the problem.</div>
+      </div>
+    {% endif %}
+    <button class="btn btn-orange d-inline-flex align-items-center gap-2" type="submit">
+      Accept Problem & Submit Solution
+      <i data-lucide="arrow-right"></i>
+    </button>
     </form>
     {% else %}
-    <a
-      href="{% url 'verification' %}"
-      class="btn btn-orange-outline d-inline-flex align-items-center gap-2"
-    >
-      <i data-lucide="shield-check"></i>
-      Verify Your Account to Help
-    </a>
-    {% endif %}
-    {% else %}
-    <div class="alert alert-secondary bg-opacity-25 border-0 text-white-75">
-      Accepting this problem is currently unavailable.
-    </div>
+      <div class="alert alert-secondary bg-opacity-25 border-0 text-white-75">
+        Accepting this problem is currently unavailable.
+      </div>
     {% endif %}
   </div>
 </section>
 
-{% if solutions %}
-<section class="solutions-list d-flex flex-column gap-4">
-  <h2 class="h5 text-gray-900">Solutions ({{ solutions|length }})</h2>
-  {% for solution in solutions %}
-  <div class="mentora-card solution-card">
-    <div class="card-body p-4">
-      <div class="d-flex align-items-start gap-3 mb-3">
-        {% include "components/avatar.html" with src=solution.author.avatar initials=solution.author.initials|default:solution.author.name|first extra_classes="solution-avatar" %}
-        <div class="flex-grow-1">
-          <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
-            <span class="fw-semibold text-gray-900"
-              >{{ solution.author.name }}</span
-            >
-            {% if solution.accepted %}
-            <span
-              class="badge-soft teal d-inline-flex align-items-center gap-1"
-            >
-              <i data-lucide="check-circle"></i>
-              Accepted Solution
-            </span>
-            {% endif %}
-          </div>
-          <div class="small text-muted-soft d-flex flex-wrap gap-3">
-            <span class="d-inline-flex align-items-center gap-1">
-              <i data-lucide="award" class="text-amber-600"></i>
-              {{ solution.author.credits }}
-            </span>
-            <span>⭐ {{ solution.author.rating }}</span>
-            <span>{{ solution.time }}</span>
-          </div>
-        </div>
-
-        {% if solution.can_edit %}
-        <div class="ms-auto d-flex flex-column flex-sm-row gap-2">
-          <a
-            class="btn btn-orange-outline btn-sm d-inline-flex align-items-center gap-1 justify-content-center"
-            href="{{ solution.edit_url }}"
-          >
-            <i data-lucide="edit-3"></i>
-            Update
-          </a>
-          <form
-            method="post"
-            action="{{ solution.delete_url }}"
-            data-confirm="Delete this solution?"
-          >
-            {% csrf_token %}
-            <button
-              class="btn btn-orange btn-sm d-inline-flex align-items-center gap-1 justify-content-center"
-              type="submit"
-            >
-              <i data-lucide="trash"></i>
-              Delete
-            </button>
-          </form>
-        </div>
-        {% endif %}
-      </div>
-      <div class="solution-content text-muted-soft whitespace-pre-line">
-        {{ solution.content }}
-      </div>
-    </div>
-  </div>
-  {% endfor %}
-</section>
-{% endif %}
-
-<div
-  class="modal fade"
-  id="mentoraConfirmModal"
-  tabindex="-1"
-  aria-hidden="true"
->
+<div class="modal fade" id="mentoraConfirmModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header border-0 pb-0">
         <h5 class="modal-title">Confirm Action</h5>
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="modal"
-          aria-label="Close"
-        ></button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body pt-2">
         <p class="mb-0 text-muted-soft" data-confirm-message>Are you sure?</p>
       </div>
       <div class="modal-footer border-0 pt-0">
-        <button type="button" class="btn btn-light" data-bs-dismiss="modal">
-          Cancel
-        </button>
-        <button type="button" class="btn btn-orange" data-confirm-accept>
-          Yes, continue
-        </button>
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-orange" data-confirm-accept>Yes, continue</button>
       </div>
     </div>
   </div>

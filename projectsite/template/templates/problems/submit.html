@@ -19,9 +19,9 @@
         <span>•</span>
         <span>Posted by {{ problem.author.name }}</span>
         <span>•</span>
-        <span class="text-amber-600 d-inline-flex align-items-center gap-1">
-          <i data-lucide="award"></i>
-          {{ problem.credits }} credits
+        <span class="text-emerald-600 d-inline-flex align-items-center gap-1">
+          <i data-lucide="users"></i>
+          {{ problem.responses }} responses so far
         </span>
       </div>
     </div>
@@ -32,7 +32,7 @@
   {% csrf_token %}
   <section class="mentora-card mb-4">
     <div class="card-header bg-transparent border-0 pb-0">
-      <h2 class="h5 text-gray-900 mb-0">Your Solution</h2>
+      <h2 class="h5 text-gray-900 mb-0">Summary of what happened</h2>
     </div>
     <div class="card-body">
       {% if solution_form.non_field_errors %}
@@ -85,40 +85,6 @@
     </div>
   </section>
 
-  <section class="mentora-card mb-4">
-    <div class="card-header bg-transparent border-0 pb-0 d-flex align-items-center justify-content-between">
-      <h2 class="h5 text-gray-900 mb-0 d-flex align-items-center gap-2">
-        <i data-lucide="sparkles" class="text-purple-500"></i>
-        AI Summary Preview
-      </h2>
-      <button type="button" class="btn btn-orange-outline btn-sm" data-ai-generate disabled>
-        Generate
-      </button>
-    </div>
-    <div class="card-body">
-      <div class="ai-summary" data-ai-output>
-        <p class="text-muted-soft mb-0">Click "Generate" to create an AI summary of your solution.</p>
-      </div>
-    </div>
-  </section>
-
-  <section class="mentora-card guideline-card mb-4">
-    <div class="card-body">
-      <h3 class="h6 text-gray-900 mb-3 d-flex align-items-center gap-2">
-        <i data-lucide="check-circle-2" class="text-blue-600"></i>
-        Solution Guidelines
-      </h3>
-      <ul class="list-unstyled mb-0 text-muted-soft small">
-        {% for tip in guidelines %}
-          <li class="d-flex gap-2 mb-2">
-            <span class="text-blue-600">•</span>
-            <span>{{ tip }}</span>
-          </li>
-        {% endfor %}
-      </ul>
-    </div>
-  </section>
-
   <div class="d-flex justify-content-between align-items-center mb-5">
     <a class="btn btn-orange-outline" href="{% url 'problem-detail' problem.slug %}">Cancel</a>
     <button type="submit" class="btn btn-orange submit-btn" disabled>Submit Solution</button>
@@ -133,7 +99,7 @@
           <i data-lucide="check-circle-2"></i>
         </div>
         <h4 class="text-gray-900 mb-2">Solution Submitted!</h4>
-        <p class="text-muted-soft mb-4">Your solution has been sent. You'll earn credits once it's accepted.</p>
+        <p class="text-muted-soft mb-4">Your solution has been sent. We'll notify you once the requester reviews it.</p>
         <div class="d-flex flex-column gap-2">
           <a class="btn btn-orange" href="{% url 'problem-detail' problem.slug %}">View Problem</a>
           <a class="btn btn-orange-outline" href="{% url 'browse-problems' %}">Browse More Problems</a>

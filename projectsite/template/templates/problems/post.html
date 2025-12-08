@@ -40,6 +40,42 @@
         {{ problem_form.description }}
         {{ problem_form.description.errors }}
       </div>
+      <div class="col-12">
+        <label class="form-label small text-muted-soft">Session Mode</label>
+        <div class="row g-3 align-items-stretch">
+          <div class="col-12 col-lg-6">
+            {{ problem_form.mode }}
+            {{ problem_form.mode.errors }}
+            <p class="small text-muted-soft mt-2 mb-0">Switch to “In Person” to unlock the campus meeting picker.</p>
+          </div>
+          <div class="col-12 col-lg-6">
+            <div class="location-picker-panel border rounded-3 p-3 h-100 d-none" data-location-picker>
+              {% if problem_obj %}
+                <div class="d-flex flex-column gap-2">
+                  {% if problem_obj.meeting_lat and problem_obj.meeting_lng %}
+                    <p class="mb-1 text-muted-soft small">
+                      Current meeting spot: <strong>{{ problem_obj.meeting_lat }}, {{ problem_obj.meeting_lng }}</strong>
+                    </p>
+                    <p class="mb-0 text-muted-soft small">Select “Select Meeting Location” to update the campus pin.</p>
+                  {% else %}
+                    <p class="mb-0 text-muted-soft">Pick a location inside Palawan State University to finalize your in-person session.</p>
+                  {% endif %}
+                  <a class="btn btn-orange d-inline-flex align-items-center gap-2 align-self-start" href="{% url 'pick_location' problem_obj.id %}">
+                    <i data-lucide="map-pin"></i>
+                    Select Meeting Location
+                  </a>
+                </div>
+              {% else %}
+                <p class="mb-0 text-muted-soft">Save the problem first to choose a campus meeting spot.</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        <div class="visually-hidden">
+          {{ problem_form.in_person_mode }}
+        </div>
+        {{ problem_form.in_person_mode.errors }}
+      </div>
       <div class="col-12 col-lg-6">
         <label class="form-label small text-muted-soft">Tags (comma separated)</label>
         {{ problem_form.tags }}
@@ -51,20 +87,9 @@
         {{ problem_form.location_label.errors }}
       </div>
       <div class="col-12 col-md-6">
-        <label class="form-label small text-muted-soft">Mode</label>
-        {{ problem_form.mode }}
-        {{ problem_form.mode.errors }}
-      </div>
-      <div class="col-12 col-md-6">
         <label class="form-label small text-muted-soft">Urgency</label>
         {{ problem_form.urgency }}
         {{ problem_form.urgency.errors }}
-      </div>
-      <div class="col-12">
-        <div class="info-banner rounded-3 px-3 py-3 d-flex align-items-center gap-2">
-          <i data-lucide="award"></i>
-          <span class="text-muted-soft">This problem awards <strong>10 credits</strong>. Credits are assigned automatically.</span>
-        </div>
       </div>
     </div>
   </div>

@@ -5,7 +5,7 @@
 <section class="page-header d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
   <div>
     <h1 class="display-6 text-gray-900 mb-1">Browse Problems</h1>
-    <p class="text-muted-soft mb-0">Help fellow students and earn credits.</p>
+    <p class="text-muted-soft mb-0">Help fellow students by sharing your expertise.</p>
   </div>
   <a class="btn btn-orange d-inline-flex align-items-center gap-2" href="{% url 'post-problem' %}">
     <i data-lucide="sparkles"></i>
@@ -71,10 +71,10 @@
         <div class="row g-4">
           <div class="col-auto">
             {% include "components/avatar.html" with src=problem.author.avatar initials=problem.author.initials|default:problem.author.name|first user_initials=problem.author.initials|default:problem.author.name|first %}
-            <div class="mt-2 text-sm text-gray-700 fw-semibold">{{ problem.author.name }}{% if problem.author.is_verified %} <i data-lucide="badge-check" class="text-teal-600" title="Verified Student"></i>{% endif %}</div>
+            <div class="mt-2 text-sm text-gray-700 fw-semibold">{{ problem.author.name }}</div>
             <div class="small text-muted-soft d-flex align-items-center gap-1">
-              <i data-lucide="award" class="text-amber-600" style="width:14px;height:14px;"></i>
-              {{ problem.author.credits }}
+              <i data-lucide="clock" class="text-amber-600" style="width:14px;height:14px;"></i>
+              Joined {{ problem.time }}
             </div>
           </div>
           <div class="col">
@@ -105,9 +105,9 @@
                 <i data-lucide="message-circle"></i>
                 {{ problem.responses }} responses
               </span>
-              <span class="d-inline-flex align-items-center gap-2 text-amber-600 ms-auto">
-                <i data-lucide="award"></i>
-                {{ problem.credits }} credits
+              <span class="d-inline-flex align-items-center gap-2 ms-auto">
+                <i data-lucide="users"></i>
+                {{ problem.responses }} active helpers
               </span>
             </div>
           </div>

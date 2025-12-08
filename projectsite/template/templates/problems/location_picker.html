@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Pick Meeting Location | PeerHelp{% endblock %}
+{% block extra_css %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'css/location-picker.css' %}">
+{% endblock %}
+{% block extra_js %}
+  {{ block.super }}
+  <script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap" async defer></script>
+  <script src="{% static 'js/location-picker.js' %}" defer></script>
+{% endblock %}
+{% block content %}
+<a class="btn btn-orange-link mb-4 d-inline-flex align-items-center gap-2" href="{{ problem_detail_url }}">
+  <i data-lucide="arrow-left"></i>
+  Back to Problem
+</a>
+
+<section class="mentora-card">
+  <div class="card-body p-4 p-lg-5">
+    <div class="d-flex flex-column gap-2 mb-4">
+      <h1 class="h4 text-gray-900 mb-0">Pick a Meeting Location</h1>
+      <p class="text-muted-soft mb-0">Select a spot inside the Palawan State University campus boundary for your in-person session.</p>
+    </div>
+    <div
+      id="psuMap"
+      class="mb-4"
+      data-initial-lat="{{ meeting_lat|default:'' }}"
+      data-initial-lng="{{ meeting_lng|default:'' }}"
+      data-google-maps-key="{{ google_maps_api_key|default:'' }}"
+    ></div>
+    <form method="post" class="d-flex flex-column flex-lg-row gap-3 align-items-lg-center">
+      {% csrf_token %}
+      <input type="hidden" name="meeting_lat" id="meeting_lat" value="{{ meeting_lat|default:'' }}" />
+      <input type="hidden" name="meeting_lng" id="meeting_lng" value="{{ meeting_lng|default:'' }}" />
+      <p class="mb-0 text-muted-soft small" data-location-status></p>
+      <div class="ms-lg-auto d-flex gap-3">
+        <a class="btn btn-orange-outline" href="{{ problem_detail_url }}">Cancel</a>
+        <button type="submit" class="btn btn-orange">Save Location</button>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}

@@ -182,6 +182,12 @@
   color: var(--color-teal-600);
 }
 
+.avatar-pill--sm {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.85rem;
+}
+
 .avatar-pill img {
   width: 100%;
   height: 100%;
@@ -674,22 +680,9 @@
   border: 4px solid rgba(239, 227, 207, 0.35);
 }
 
-.problem-meta svg,
-.credit-pill svg {
+.problem-meta svg {
   width: 18px;
   height: 18px;
-}
-
-.credit-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.6rem 1.25rem;
-  border-radius: 1rem;
-  background-image: linear-gradient(135deg, var(--color-white), var(--color-white));
-  color: var(--color-brand);
-  font-weight: 600;
-  border: 1px solid rgba(227, 83, 54, 0.45);
 }
 
 .attachment-grid {
@@ -828,13 +821,6 @@
   padding: 1.5rem 1.75rem;
 }
 
-.submit-solution-page .ai-summary {
-  border: 1px dashed rgba(227, 83, 54, 0.15);
-  border-radius: 1.25rem;
-  padding: 1.25rem;
-  background-color: rgba(255, 255, 255, 0.9);
-}
-
 .attachment-preview {
   position: relative;
   border-radius: 1rem;
@@ -862,22 +848,13 @@
   place-items: center;
 }
 
-.ai-summary {
-  border-radius: 1.5rem;
-  padding: 1.25rem;
-  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.65));
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  min-height: 4rem;
-}
-
 .guideline-card {
   background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.6));
   border: 1px solid rgba(255, 255, 255, 0.6);
 }
 
 .submit-btn:disabled,
-.btn-outline-teal:disabled,
-[data-ai-generate][disabled] {
+.btn-outline-teal:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
@@ -1019,16 +996,6 @@
   background-image: linear-gradient(135deg, var(--color-white), var(--color-primary));
 }
 
-.ai-feature-card {
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.ai-feature-card:hover {
-  transform: translateY(-6px);
-  box-shadow: var(--shadow-lg);
-}
-
 .feature-icon {
   width: 64px;
   height: 64px;
@@ -1147,56 +1114,6 @@
 
 .btn-gradient .btn-loading {
   align-items: center;
-}
-
-.ai-tools-panel .nav-tabs {
-  border: none;
-}
-
-.ai-tabs .nav-link {
-  border: none;
-  border-bottom: 2px solid transparent;
-  border-radius: 0;
-  color: var(--color-gray-500);
-  font-weight: 600;
-  gap: 0.5rem;
-  padding: 1rem 1.5rem;
-}
-
-.ai-tabs .nav-link.active {
-  color: var(--color-teal-600);
-  border-color: var(--color-teal-500);
-  background-color: transparent;
-}
-
-.ai-input {
-  border-radius: 1.25rem;
-  border: 1px solid rgba(255, 255, 255, 0.9);
-  background-color: rgba(255, 255, 255, 0.8);
-  padding: 1.25rem;
-}
-
-.ai-input:focus {
-  border-color: rgba(239, 227, 207, 0.5);
-  box-shadow: 0 0 0 0.2rem rgba(239, 227, 207, 0.15);
-}
-
-.ai-output-card {
-  border-radius: 1.25rem;
-  padding: 1.25rem;
-  border: 1px solid rgba(255, 255, 255, 0.7);
-  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.9));
-}
-
-.ai-output-card.blue {
-  border-color: rgba(255, 255, 255, 0.7);
-  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.95));
-}
-
-.ai-output-card p {
-  color: var(--color-gray-600);
-  font-size: 0.95rem;
-  line-height: 1.65;
 }
 
 .usage-card {
@@ -1641,6 +1558,24 @@
   background-image: linear-gradient(135deg, var(--color-white), var(--color-white));
 }
 
+.map-stage {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 420px;
+  background-color: transparent;
+}
+
+.map-empty-state {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+  text-align: center;
+}
+
 .map-grid {
   position: absolute;
   inset: 0;
@@ -1719,6 +1654,14 @@
   background-color: var(--color-white);
 }
 
+.legend-dot--request {
+  background-color: #ff6b00;
+}
+
+.legend-dot--user {
+  background-color: #2563eb;
+}
+
 .map-zoom {
   position: absolute;
   top: 1.25rem;
@@ -1773,10 +1716,21 @@
   white-space: normal;
 }
 
-.request-card.active,
-.request-card:hover {
-  transform: translateX(4px);
-  box-shadow: var(--shadow-lg);
+.request-card {
+  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.9));
+  border: none;
+  box-shadow: 0 15px 30px rgba(227, 83, 54, 0.08);
+}
+
+.request-card:not(.active):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 35px rgba(227, 83, 54, 0.12);
+}
+
+.request-card.active {
+  transform: translateY(-2px);
+  box-shadow: 0 25px 45px rgba(227, 83, 54, 0.2);
+  border: 2px solid rgba(227, 83, 54, 0.3);
 }
 
 .request-meta i {

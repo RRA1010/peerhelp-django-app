@@ -13,6 +13,28 @@ document.addEventListener("DOMContentLoaded", () => {
     window.lucide.createIcons();
   }
 
+  const modeSelect = document.querySelector('[data-mode-select]');
+  const inPersonFlag = document.querySelector('[data-in-person-flag]');
+  const locationPickerSections = document.querySelectorAll('[data-location-picker]');
+  const syncLocationPicker = () => {
+    if (!locationPickerSections.length) {
+      return;
+    }
+    const isInPerson = modeSelect ? modeSelect.value === 'in_person' : Boolean(inPersonFlag && inPersonFlag.checked);
+    locationPickerSections.forEach((section) => {
+      section.classList.toggle('d-none', !isInPerson);
+    });
+    if (inPersonFlag) {
+      inPersonFlag.checked = isInPerson;
+    }
+  };
+  if (modeSelect) {
+    modeSelect.addEventListener('change', syncLocationPicker);
+    syncLocationPicker();
+  } else if (locationPickerSections.length) {
+    locationPickerSections.forEach((section) => section.classList.remove('d-none'));
+  }
+
   document.querySelectorAll('[data-toggle-password]').forEach((button) => {
     const targetSelector = button.getAttribute('data-toggle-password');
     const target = document.querySelector(targetSelector);
@@ -38,8 +60,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const solutionInput = document.getElementById('solutionInput');
   const charCounter = document.querySelector('[data-char-count]');
   const submitBtn = document.querySelector('.submit-btn');
-  const aiButton = document.querySelector('[data-ai-generate]');
-  const aiOutput = document.querySelector('[data-ai-output]');
 
   const updateSolutionState = () => {
     if (!solutionInput) {
@@ -52,80 +72,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (submitBtn) {
       submitBtn.disabled = count === 0;
     }
-    if (aiButton) {
-      aiButton.disabled = count === 0;
-    }
   };
 
   if (solutionInput) {
     solutionInput.addEventListener('input', updateSolutionState);
     updateSolutionState();
   }
-
-  if (aiButton && solutionInput && aiOutput) {
-    aiButton.addEventListener('click', () => {
-      const text = solutionInput.value.trim();
-      if (!text) {
-        return;
-      }
-      const summary = `${text.slice(0, 140)}${text.length > 140 ? '…' : ''}`;
-      aiOutput.innerHTML = `<p class="mb-0 text-gray-700">${summary}</p>`;
-    });
-  }
-
-
-  const toggleButtonLoading = (button, isLoading) => {
-    if (!button) {
-      return;
-    }
-    button.classList.toggle('is-loading', Boolean(isLoading));
-  };
-
-  const generateSummaryHTML = (value) => {
-    const trimmed = value.slice(0, 300);
-    return [
-      '<p class="mb-0 text-muted-soft">',
-      '📝 <strong>Solution Snapshot</strong><br><br>',
-      '• Key Focus: ',
-      trimmed,
-      value.length > 300 ? '…' : '',
-      '<br>',
-      '• Methodology: highlighted main strategy, supporting steps, and validation.<br>',
-      '• Skills: reasoning, explanation clarity, subject mastery.',
-      '</p>'
-    ].join('');
-  };
-
-  document.querySelectorAll('[data-ai-generate]').forEach((button) => {
-    button.addEventListener('click', () => {
-      const targetKey = button.getAttribute('data-ai-generate');
-      if (!targetKey) {
-        return;
-      }
-
-      const input = document.querySelector(`[data-ai-input="${targetKey}"]`);
-      const outputWrapper = document.querySelector(`[data-ai-output="${targetKey}"]`);
-      const outputContent = document.querySelector(`[data-ai-content="${targetKey}"]`);
-
-      if (!input || !outputWrapper || !outputContent) {
-        return;
-      }
-
-      const value = input.value.trim();
-      if (!value) {
-        input.focus();
-        return;
-      }
-
-      toggleButtonLoading(button, true);
-      outputWrapper.classList.remove('d-none');
-
-      setTimeout(() => {
-        outputContent.innerHTML = generateSummaryHTML(value);
-        toggleButtonLoading(button, false);
-      }, 900);
-    });
-  });
 
   document.querySelectorAll('[data-rating-control]').forEach((ratingControl) => {
     const hostContainer = ratingControl.closest('[data-rating-host]') || ratingControl.parentElement;
@@ -245,4 +197,30 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
   }
+
+  // Ensure mobile nav links close the drawer before navigating
+  const mobileSidebarElement = document.getElementById('mobileSidebar');
+  if (mobileSidebarElement && window.bootstrap) {
+    const mobileNavLinks = mobileSidebarElement.querySelectorAll('[data-mobile-nav-link]');
+    if (mobileNavLinks.length) {
+      const getOffcanvasInstance = () => bootstrap.Offcanvas.getOrCreateInstance(mobileSidebarElement);
+      mobileNavLinks.forEach((link) => {
+        link.addEventListener('click', (event) => {
+          const destination = link.getAttribute('href');
+          if (!destination || destination.startsWith('#')) {
+            return;
+          }
+          event.preventDefault();
+          const offcanvasInstance = getOffcanvasInstance();
+          if (offcanvasInstance) {
+            offcanvasInstance.hide();
+          }
+          setTimeout(() => {
+            window.location.assign(destination);
+          }, 120);
+        });
+      });
+    }
+  }
+
 });
